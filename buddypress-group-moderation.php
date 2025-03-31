@@ -17,104 +17,7 @@
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
-	/**
-	 * Register our component to the notifications component array.
-	 *
-	 * @param array $component_names Array of component names.
-	 * @return array
-	 */
-	public function register_notifications_component( $component_names = array() ) {
-		// Force $component_names to be an array
-		if ( ! is_array( $component_names ) ) {
-			$component_names = array();
-		}
-		
-		// Add our component to the registered components
-		array_push( $component_names, 'bp_group_moderation' );
-		
-		return $component_names;
-	}
-
-	/**
-	 * Format the notifications for our component.
-	 *
-	 * @param string $action            The notification action.
-	 * @param int    $item_id           The item ID.
-	 * @param int    $secondary_item_id The secondary item ID.
-	 * @param int    $total_items       The total number of items to format.
-	 * @param string $format            The format to return. 'string' or 'object'.
-	 * @param string $component_action  The component action.
-	 * @param string $component_name    The component name.
-	 * @param int    $id                The notification ID.
-	 * @return string|object
-	 */
-	public function format_notifications( $action, $item_id, $secondary_item_id, $total_items, $format, $component_action, $component_name, $id ) {
-		// Only handle our component's notifications
-		if ( 'bp_group_moderation' !== $component_name ) {
-			return $action;
-		}
-		
-		// Format based on the component action
-		$group_id = $item_id;
-		$group = groups_get_group( $group_id );
-		
-		if ( 'new_group_pending' === $component_action ) {
-			if ( 1 === $total_items ) {
-				$text = sprintf( __( 'New group "%s" is pending approval', 'bp-group-moderation' ), $group->name );
-				$link = admin_url( 'admin.php?page=bp-pending-groups' );
-			} else {
-				$text = sprintf( __( '%d new groups are pending approval', 'bp-group-moderation' ), $total_items );
-				$link = admin_url( 'admin.php?page=bp-pending-groups' );
-			}
-		} elseif ( 'group_approved' === $component_action ) {
-			$text = sprintf( __( 'Your group "%s" has been approved!', 'bp-group-moderation' ), $group->name );
-			$link = bp_get_group_permalink( $group );
-		} elseif ( 'group_rejected' === $component_action ) {
-			$text = __( 'Your group was not approved by site administrators.', 'bp-group-moderation' );
-			$link = bp_get_loggedin_user_domain();
-		} else {
-			return $action;
-		}
-		
-		// WordPress Toolbar.
-		if ( 'string' === $format ) {
-			$return = '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
-		} else {
-			$return = array(
-				'text' => $text,
-				'link' => $link
-			);
-		}
-		
-		return $return;
-	}
 }
-
-// Initialize the plugin.
-function bp_group_moderation_init() {
-	return BP_Group_Moderation::get_instance();
-}
-add_action( 'plugins_loaded', 'bp_group_moderation_init' );
-
-/**
- * Activation hook for the plugin.
- */
-function bp_group_moderation_activate() {
-	// Set default options.
-	add_option( 'bp_group_moderation_auto_approve_admin', true );
-	add_option( 'bp_group_moderation_hide_pending', true );
-	add_option( 'bp_group_moderation_send_emails', true );
-}
-register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
-
-/**
- * Deactivation hook for the plugin.
- */
-function bp_group_moderation_deactivate() {
-	// Nothing to do here yet.
-}
-register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
-
 
 // Define plugin constants.
 define( 'BP_GROUP_MODERATION_VERSION', '1.0.0' );
@@ -778,3 +681,101 @@ If you have questions about this decision, please contact the site administrator
 		// Register our custom notification component
 		bp_notifications_register_notification_component( 'bp_group_moderation' );
 	}
+
+	/**
+	 * Register our component to the notifications component array.
+	 *
+	 * @param array $component_names Array of component names.
+	 * @return array
+	 */
+	public function register_notifications_component( $component_names = array() ) {
+		// Force $component_names to be an array
+		if ( ! is_array( $component_names ) ) {
+			$component_names = array();
+		}
+		
+		// Add our component to the registered components
+		array_push( $component_names, 'bp_group_moderation' );
+		
+		return $component_names;
+	}
+
+	/**
+	 * Format the notifications for our component.
+	 *
+	 * @param string $action            The notification action.
+	 * @param int    $item_id           The item ID.
+	 * @param int    $secondary_item_id The secondary item ID.
+	 * @param int    $total_items       The total number of items to format.
+	 * @param string $format            The format to return. 'string' or 'object'.
+	 * @param string $component_action  The component action.
+	 * @param string $component_name    The component name.
+	 * @param int    $id                The notification ID.
+	 * @return string|object
+	 */
+	public function format_notifications( $action, $item_id, $secondary_item_id, $total_items, $format, $component_action, $component_name, $id ) {
+		// Only handle our component's notifications
+		if ( 'bp_group_moderation' !== $component_name ) {
+			return $action;
+		}
+		
+		// Format based on the component action
+		$group_id = $item_id;
+		$group = groups_get_group( $group_id );
+		
+		if ( 'new_group_pending' === $component_action ) {
+			if ( 1 === $total_items ) {
+				$text = sprintf( __( 'New group "%s" is pending approval', 'bp-group-moderation' ), $group->name );
+				$link = admin_url( 'admin.php?page=bp-pending-groups' );
+			} else {
+				$text = sprintf( __( '%d new groups are pending approval', 'bp-group-moderation' ), $total_items );
+				$link = admin_url( 'admin.php?page=bp-pending-groups' );
+			}
+		} elseif ( 'group_approved' === $component_action ) {
+			$text = sprintf( __( 'Your group "%s" has been approved!', 'bp-group-moderation' ), $group->name );
+			$link = bp_get_group_permalink( $group );
+		} elseif ( 'group_rejected' === $component_action ) {
+			$text = __( 'Your group was not approved by site administrators.', 'bp-group-moderation' );
+			$link = bp_get_loggedin_user_domain();
+		} else {
+			return $action;
+		}
+		
+		// WordPress Toolbar.
+		if ( 'string' === $format ) {
+			$return = '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
+		} else {
+			$return = array(
+				'text' => $text,
+				'link' => $link
+			);
+		}
+		
+		return $return;
+	}
+}
+
+// Initialize the plugin.
+function bp_group_moderation_init() {
+	return BP_Group_Moderation::get_instance();
+}
+add_action( 'plugins_loaded', 'bp_group_moderation_init' );
+
+/**
+ * Activation hook for the plugin.
+ */
+function bp_group_moderation_activate() {
+	// Set default options.
+	add_option( 'bp_group_moderation_auto_approve_admin', true );
+	add_option( 'bp_group_moderation_hide_pending', true );
+	add_option( 'bp_group_moderation_send_emails', true );
+}
+register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
+
+/**
+ * Deactivation hook for the plugin.
+ */
+function bp_group_moderation_deactivate() {
+	// Nothing to do here yet.
+}
+register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
