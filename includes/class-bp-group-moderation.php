@@ -61,8 +61,11 @@ class BP_Group_Moderation {
 			return;
 		}
 
-		// Group creation hooks.
+		// Group creation hooks - use multiple hooks to ensure we catch all group creation events
 		add_action( 'groups_group_after_save', array( $this, 'set_group_to_pending' ) );
+		add_action( 'groups_create_group', array( $this, 'set_group_to_pending' ) );
+		add_action( 'groups_created_group', array( $this, 'set_group_to_pending' ) );
+		add_action( 'groups_group_create_complete', array( $this, 'set_group_to_pending' ) );
 		
 		// Filter group queries.
 		add_filter( 'bp_groups_get_groups', array( $this, 'filter_pending_groups' ), 10, 2 );
@@ -89,32 +92,45 @@ class BP_Group_Moderation {
 	 * @param BP_Groups_Group $group The group object.
 	 */
 	public function set_group_to_pending( $group ) {
-		// Skip for site admins if configured to do so.
+		// Only set to pending for newly created groups.
+		if ( empty( $group->is_new ) ) {
+			return;
+		}
+
+		// Check debug info
+		error_log( 'BP Group Moderation: Checking newly created group ' . $group->id );
+		
+		// Check if we should auto-approve for admins
 		$auto_approve_admin = get_option( 'bp_group_moderation_auto_approve_admin', true );
+		error_log( 'BP Group Moderation: Auto-approve setting is ' . ($auto_approve_admin ? 'enabled' : 'disabled') );
+		
+		// Skip for site admins if configured to do so (and log it)
 		if ( $auto_approve_admin && current_user_can( 'manage_options' ) ) {
+			error_log( 'BP Group Moderation: Skipping moderation for admin-created group ' . $group->id );
 			return;
 		}
 		
-		// Only set to pending for newly created groups.
-		if ( $group->is_new ) {
-			// Store the original requested status.
-			$original_status = $group->status;
-			groups_update_groupmeta( $group->id, 'requested_status', $original_status );
-			
-			// Set approval status to pending.
-			groups_update_groupmeta( $group->id, 'approval_status', 'pending' );
-			
-			// Optionally set to hidden while pending (based on settings).
-			$hide_pending = get_option( 'bp_group_moderation_hide_pending', true );
-			if ( $hide_pending ) {
-				// Update the visibility to hidden.
-				$group->status = 'hidden';
-				$group->save();
-			}
-			
-			// Notify administrators.
-			$this->notify_admins_of_pending_group( $group->id );
+		// Store the original requested status.
+		$original_status = $group->status;
+		groups_update_groupmeta( $group->id, 'requested_status', $original_status );
+		error_log( 'BP Group Moderation: Stored original status: ' . $original_status );
+		
+		// Set approval status to pending.
+		groups_update_groupmeta( $group->id, 'approval_status', 'pending' );
+		
+		// Optionally set to hidden while pending (based on settings).
+		$hide_pending = get_option( 'bp_group_moderation_hide_pending', true );
+		if ( $hide_pending ) {
+			// Update the visibility to hidden.
+			$group->status = 'hidden';
+			$group->save();
+			error_log( 'BP Group Moderation: Set group to hidden status' );
 		}
+		
+		// Notify administrators.
+		$this->notify_admins_of_pending_group( $group->id );
+		
+		error_log( 'BP Group Moderation: Group ' . $group->id . ' set to pending status' );
 	}
 
 	/**
@@ -251,6 +267,26 @@ View the group: %4$s', 'bp-group-moderation' ),
 		
 		$group_id = bp_get_current_group_id();
 		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
+		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
+		
+		// Debug information for admins
+		if ( current_user_can( 'manage_options' ) ) {
+			?>
+			<div class="bp-feedback info" style="display: <?php echo WP_DEBUG ? 'block' : 'none'; ?>;">
+				<span class="bp-icon" aria-hidden="true"></span>
+				<p>
+					<?php 
+					echo sprintf(
+						'Debug Info: Group ID: %d, Approval Status: %s, Requested Status: %s', 
+						$group_id, 
+						$approval_status ? $approval_status : 'Not set',
+						$requested_status ? $requested_status : 'Not set'
+					); 
+					?>
+				</p>
+			</div>
+			<?php
+		}
 		
 		if ( 'pending' === $approval_status ) {
 			// Show to group admins and site admins.
