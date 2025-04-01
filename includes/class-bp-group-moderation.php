@@ -61,17 +61,30 @@ class BP_Group_Moderation {
 			return;
 		}
 
-		// Group creation hooks.
-		add_action( 'groups_group_after_save', array( $this, 'set_group_to_pending' ) );
+		// Group creation hooks - Catch group creation in multiple stages
 		add_action( 'groups_create_group', array( $this, 'catch_new_group' ), 10, 3 );
+		add_action( 'groups_created_group', array( $this, 'early_catch_new_group' ), 1, 2 );
+		add_action( 'groups_group_after_save', array( $this, 'set_group_to_pending' ), 20 );
 		
-		// Filter group queries.
+		// Intercept group status changes directly
+		add_filter( 'bp_group_status_change', array( $this, 'intercept_status_change' ), 10, 3 );
+		
+		// Filter group queries to hide pending groups
 		add_filter( 'bp_groups_get_groups', array( $this, 'filter_pending_groups' ), 10, 2 );
 		add_filter( 'bp_activity_get', array( $this, 'filter_pending_groups_activity' ), 10, 1 );
 		
 		// Display hooks.
 		add_action( 'bp_before_group_header', array( $this, 'display_pending_notice' ) );
 
+		// Schedule regular checks for pending groups that should be hidden
+		add_action( 'bp_group_moderation_hourly_check', array( $this, 'check_pending_groups_status' ) );
+		if ( ! wp_next_scheduled( 'bp_group_moderation_hourly_check' ) ) {
+			wp_schedule_event( time(), 'hourly', 'bp_group_moderation_hourly_check' );
+		}
+
+		// Add hook for direct database access
+		add_action( 'bp_group_moderation_verify_status', array( $this, 'verify_group_status' ) );
+		
 		// Debug hook for admin users - add a button to test the function
 		if ( current_user_can('manage_options') && bp_is_group() ) {
 			add_action( 'bp_before_group_header', array( $this, 'add_admin_test_buttons' ) );
@@ -93,45 +106,123 @@ class BP_Group_Moderation {
 	}
 
 	/**
+	 * Intercept status changes and ensure pending groups stay hidden
+	 *
+	 * @param string $new_status The new status.
+	 * @param string $old_status The old status.
+	 * @param object $group The group object.
+	 * @return string The status to use
+	 */
+	public function intercept_status_change( $new_status, $old_status, $group ) {
+		// Check if this group is pending
+		$approval_status = groups_get_groupmeta( $group->id, 'approval_status', true );
+		
+		if ( 'pending' === $approval_status ) {
+			// Force pending groups to stay hidden regardless of status changes
+			if ( defined('WP_DEBUG') && WP_DEBUG ) {
+				error_log( 'BP Group Moderation: Intercepted status change for group ' . $group->id . ' from ' . $old_status . ' to ' . $new_status . '. Forcing to hidden.' );
+			}
+			
+			// Store the requested status if not already stored
+			$requested_status = groups_get_groupmeta( $group->id, 'requested_status', true );
+			if ( empty( $requested_status ) ) {
+				groups_update_groupmeta( $group->id, 'requested_status', $new_status );
+			}
+			
+			return 'hidden';
+		}
+		
+		return $new_status;
+	}
+	
+	/**
+	 * Early catch for newly created groups
+	 *
+	 * @param int $group_id The group ID.
+	 * @param BP_Groups_Group $group The group object.
+	 */
+	public function early_catch_new_group( $group_id, $group ) {
+		if ( defined('WP_DEBUG') && WP_DEBUG ) {
+			error_log( 'BP Group Moderation: Early catch new group - ID: ' . $group_id );
+		}
+		
+		// Set the is_new flag explicitly
+		$group->is_new = true;
+		
+		// Mark this as a new group in a temp transient (helps handle race conditions)
+		set_transient( 'bp_new_group_' . $group_id, true, 300 ); // 5 minutes expiration
+		
+		// Apply immediately and schedule a check
+		$this->process_new_group($group);
+		wp_schedule_single_event( time() + 5, 'bp_group_moderation_verify_status', array( $group_id ) );
+	}
+	
+	/**
+	 * Explicitly handle new groups from the groups_create_group action.
+	 *
+	 * @param int $group_id The group ID.
+	 * @param BP_Groups_Member $member The member object.
+	 * @param BP_Groups_Group $group The group object.
+	 */
+	public function catch_new_group( $group_id, $member, $group ) {
+		if ( defined('WP_DEBUG') && WP_DEBUG ) {
+			error_log( 'BP Group Moderation: Catch new group - ID: ' . $group_id );
+		}
+		
+		// Set the is_new flag explicitly
+		$group->is_new = true;
+		
+		// Mark this as a new group
+		set_transient( 'bp_new_group_' . $group_id, true, 300 ); // 5 minutes expiration
+		
+		// Apply immediately and schedule a check
+		$this->process_new_group($group);
+		wp_schedule_single_event( time() + 5, 'bp_group_moderation_verify_status', array( $group_id ) );
+	}
+
+	/**
 	 * Set a newly created group to pending status.
 	 *
 	 * @param BP_Groups_Group $group The group object.
 	 */
 	public function set_group_to_pending( $group ) {
-		// Debug the incoming group object (commented out for production)
-		/*
 		if ( defined('WP_DEBUG') && WP_DEBUG ) {
-			error_log( 'BP Group Moderation: Group object - ID: ' . $group->id . ', Status: ' . $group->status . ', Is New: ' . (isset($group->is_new) ? ($group->is_new ? 'Yes' : 'No') : 'Not Set') );
-		}
-		*/
-		
-		// Check if this group already has approval status set
-		$existing_approval = groups_get_groupmeta( $group->id, 'approval_status', true );
-		if ( !empty( $existing_approval ) ) {
-			/*
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Group ' . $group->id . ' already has approval status: ' . $existing_approval );
-			}
-			*/
-			return;
+			error_log( 'BP Group Moderation: Processing group - ID: ' . $group->id . ', Status: ' . $group->status );
 		}
 		
-		// Better detection for new groups
+		// Check if this is a new group based on multiple criteria
 		$is_new_group = false;
 		
-		// Check if the group is marked as new or has been created recently
+		// Check multiple ways to determine if this is a new group
 		if ( !empty( $group->is_new ) || 
-			 (isset($group->date_created) && strtotime($group->date_created) > (time() - 300)) ) {
+			 (isset($group->date_created) && strtotime($group->date_created) > (time() - 300)) ||
+			 get_transient( 'bp_new_group_' . $group->id ) ) {
 			$is_new_group = true;
 		}
 		
-		// Only process newly created groups
+		// Only process new groups
 		if ( !$is_new_group ) {
-			/*
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Group ' . $group->id . ' is not new, skipping moderation' );
+			// Could be an existing pending group that needs status verified
+			$this->check_pending_status($group);
+			return;
+		}
+		
+		$this->process_new_group($group);
+	}
+	
+	/**
+	 * Process a new group and apply moderation settings
+	 *
+	 * @param BP_Groups_Group $group The group object.
+	 */
+	private function process_new_group( $group ) {
+		// Check if this group already has approval status set
+		$existing_approval = groups_get_groupmeta( $group->id, 'approval_status', true );
+		if ( !empty( $existing_approval ) ) {
+			// If it's pending but not hidden, force it to hidden
+			if ( 'pending' === $existing_approval && 'hidden' !== $group->status ) {
+				$this->force_hidden_status($group->id);
 			}
-			*/
 			return;
 		}
 		
@@ -143,62 +234,131 @@ class BP_Group_Moderation {
 			$is_admin = user_can( $creator_id, 'manage_options' );
 			
 			if ( $is_admin ) {
-				/*
 				if ( defined('WP_DEBUG') && WP_DEBUG ) {
 					error_log( 'BP Group Moderation: Skipping moderation for admin-created group ' . $group->id );
 				}
-				*/
 				return;
 			}
 		}
 		
-		// Store the original requested status.
+		// Store the original requested status
 		$original_status = $group->status;
 		groups_update_groupmeta( $group->id, 'requested_status', $original_status );
-		/*
 		if ( defined('WP_DEBUG') && WP_DEBUG ) {
 			error_log( 'BP Group Moderation: Stored original status: ' . $original_status );
 		}
-		*/
 		
-		// Set approval status to pending.
+		// Set approval status to pending
 		groups_update_groupmeta( $group->id, 'approval_status', 'pending' );
 		
-		// Always set to hidden while pending
-		$hide_pending = get_option( 'bp_group_moderation_hide_pending', true );
-		if ( $hide_pending ) {
-			$group->status = 'hidden';
-			$group->save();
-			/*
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Set group to hidden status' );
-			}
-			*/
-		}
+		// Force the group to hidden status
+		$this->force_hidden_status($group->id);
 		
 		// Notify administrators.
 		$this->notify_admins_of_pending_group( $group->id );
+	}
+	
+	/**
+	 * Force a group to hidden status using multiple methods
+	 *
+	 * @param int $group_id The group ID.
+	 */
+	private function force_hidden_status( $group_id ) {
+		// Get fresh group object
+		$group = groups_get_group( $group_id );
 		
-		/*
+		// Try BP's standard method first
+		$group->status = 'hidden';
+		$result = $group->save();
+		
 		if ( defined('WP_DEBUG') && WP_DEBUG ) {
-			error_log( 'BP Group Moderation: Group ' . $group->id . ' set to pending status' );
+			error_log( 'BP Group Moderation: Set group to hidden status. Save result: ' . ($result ? 'Success' : 'Failed') );
 		}
-		*/
+		
+		// Double-check it worked and use direct DB access if needed
+		$updated_group = groups_get_group( $group_id );
+		if ( 'hidden' !== $updated_group->status ) {
+			if ( defined('WP_DEBUG') && WP_DEBUG ) {
+				error_log( 'BP Group Moderation: Group status not set to hidden properly. Using direct database update.' );
+			}
+			
+			// Use direct database update
+			global $wpdb, $bp;
+			$wpdb->update(
+				$bp->groups->table_name,
+				array( 'status' => 'hidden' ),
+				array( 'id' => $group_id ),
+				array( '%s' ),
+				array( '%d' )
+			);
+		}
 	}
 
 	/**
-	 * Explicitly handle new groups from the groups_create_group action.
+	 * Check and fix pending group status if needed
 	 *
-	 * @param int $group_id The group ID.
-	 * @param BP_Groups_Member $member The member object.
 	 * @param BP_Groups_Group $group The group object.
 	 */
-	public function catch_new_group( $group_id, $member, $group ) {
-		// Set the is_new flag explicitly
-		$group->is_new = true;
+	private function check_pending_status( $group ) {
+		$approval_status = groups_get_groupmeta( $group->id, 'approval_status', true );
 		
-		// Call set_group_to_pending with properly flagged group
-		$this->set_group_to_pending( $group );
+		if ( 'pending' === $approval_status && 'hidden' !== $group->status ) {
+			if ( defined('WP_DEBUG') && WP_DEBUG ) {
+				error_log( 'BP Group Moderation: Found pending group ' . $group->id . ' not hidden, fixing...' );
+			}
+			
+			$this->force_hidden_status( $group->id );
+		}
+	}
+	
+	/**
+	 * Verify and fix group status if needed (run after a short delay)
+	 *
+	 * @param int $group_id The group ID.
+	 */
+	public function verify_group_status( $group_id ) {
+		$group = groups_get_group( $group_id );
+		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
+		
+		if ( 'pending' === $approval_status && 'hidden' !== $group->status ) {
+			if ( defined('WP_DEBUG') && WP_DEBUG ) {
+				error_log( 'BP Group Moderation: Delayed check - Group ' . $group_id . ' is pending but not hidden, fixing...' );
+			}
+			
+			$this->force_hidden_status( $group_id );
+		}
+	}
+	
+	/**
+	 * Scheduled task to check all pending groups and ensure they're hidden
+	 */
+	public function check_pending_groups_status() {
+		global $wpdb, $bp;
+		
+		// Get all pending group IDs
+		$pending_group_ids = $wpdb->get_col( $wpdb->prepare(
+			"SELECT g.id FROM {$bp->groups->table_name} g
+			INNER JOIN {$bp->groups->table_name_groupmeta} m ON g.id = m.group_id
+			WHERE m.meta_key = %s AND m.meta_value = %s",
+			'approval_status',
+			'pending'
+		) );
+		
+		if ( empty( $pending_group_ids ) ) {
+			return;
+		}
+		
+		foreach ( $pending_group_ids as $group_id ) {
+			$group = groups_get_group( $group_id );
+			
+			if ( 'hidden' !== $group->status ) {
+				if ( defined('WP_DEBUG') && WP_DEBUG ) {
+					error_log( 'BP Group Moderation: Scheduled check - Group ' . $group_id . ' is pending but not hidden, fixing...' );
+				}
+				
+				$this->force_hidden_status( $group_id );
+			}
+		}
 	}
 
 	/**
@@ -337,8 +497,6 @@ View the group: %4$s', 'bp-group-moderation' ),
 		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
 		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
 		
-		// Debug information for admins - commented out for production
-		/*
 		if ( current_user_can( 'manage_options' ) && defined('WP_DEBUG') && WP_DEBUG ) {
 			?>
 			<div class="bp-feedback info">
@@ -356,9 +514,14 @@ View the group: %4$s', 'bp-group-moderation' ),
 			</div>
 			<?php
 		}
-		*/
 		
 		if ( 'pending' === $approval_status ) {
+			// Ensure this group is hidden regardless of its current status
+			$group = groups_get_group( $group_id );
+			if ( 'hidden' !== $group->status ) {
+				$this->force_hidden_status( $group_id );
+			}
+			
 			// Show to group admins and site admins.
 			if ( groups_is_user_admin( bp_loggedin_user_id(), $group_id ) || current_user_can( 'manage_options' ) ) {
 				?>
@@ -414,8 +577,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 			groups_update_groupmeta( $group_id, 'approval_status', 'pending' );
 			
 			// Set to hidden while pending
-			$group->status = 'hidden';
-			$group->save();
+			$this->force_hidden_status( $group_id );
 			
 			bp_core_add_message( __( 'Group has been set to pending status.', 'bp-group-moderation' ), 'success' );
 		}
@@ -473,25 +635,21 @@ View the group: %4$s', 'bp-group-moderation' ),
 	 * @return bool Success status.
 	 */
 	public function approve_group( $group_id ) {
-		// Get the originally requested status.
+		// Get the originally requested status
 		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
 		
-		// Get the group object.
+		// Get the group object
 		$group = groups_get_group( $group_id );
 		
-		if ( ! $group ) {
-			return false;
-		}
-		
-		// Update the group to the requested status.
+		// Update the group to the requested status
 		$group->status = $requested_status;
 		$result = $group->save();
 		
 		if ( $result ) {
-			// Remove the pending flag.
+			// Remove the pending flag
 			groups_delete_groupmeta( $group_id, 'approval_status' );
 			
-			// Notify the group creator.
+			// Notify the group creator
 			$this->notify_user_of_group_decision( $group, 'approved' );
 			
 			return true;
@@ -507,20 +665,13 @@ View the group: %4$s', 'bp-group-moderation' ),
 	 * @return bool Success status.
 	 */
 	public function reject_group( $group_id ) {
-		// Get group info before deletion.
+		// Get group info before deletion
 		$group = groups_get_group( $group_id );
 		
-		if ( ! $group ) {
-			return false;
-		}
-		
-		$creator_id = $group->creator_id;
-		$group_name = $group->name;
-		
-		// Notify the creator before deleting the group.
+		// Notify the creator before deleting the group
 		$this->notify_user_of_group_decision( $group, 'rejected' );
 		
-		// Delete the group.
+		// Delete the group
 		$result = groups_delete_group( $group_id );
 		
 		return $result;
