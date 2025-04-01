@@ -21,6 +21,23 @@ class BP_Group_Moderation {
 	 * @var object
 	 */
 	protected static $instance = null;
+	
+	
+	/**
+	 * Get group URL in a backward-compatible way.
+	 *
+	 * @param BP_Groups_Group $group The group object.
+	 * @return string
+	 */
+	protected static function get_group_url( $group ) {
+		if ( function_exists( 'bp_get_group_url' ) ) {
+			return bp_get_group_url( $group );
+		} elseif ( function_exists( 'bp_get_group_permalink' ) ) {
+			return bp_get_group_permalink( $group );
+		}
+		return '';
+	}
+
 
 	/**
 	 * Initialize the plugin.
@@ -375,7 +392,7 @@ class BP_Group_Moderation {
 			'fields'  => 'ID',
 		) );
 		
-		$group_url = bp_get_group_permalink( $group );
+		$group_url = self::get_group_url( $group );
 		$admin_url = admin_url( 'admin.php?page=bp-pending-groups' );
 		
 		$subject = sprintf( __( 'New Group Pending Approval: %s', 'bp-group-moderation' ), $group->name );
@@ -543,13 +560,13 @@ View the group: %4$s', 'bp-group-moderation' ),
 		<div class="bp-feedback bp-group-moderation-admin-tools" style="margin-bottom: 15px; background: #f0f0f0; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
 			<h4><?php esc_html_e( 'Group Moderation Admin Tools', 'bp-group-moderation' ); ?></h4>
 			<p>
-				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'set-pending', bp_get_group_permalink( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'set-pending', self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'Set as Pending', 'bp-group-moderation' ); ?>
 				</a>
-				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'clear-pending', bp_get_group_permalink( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'clear-pending', self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'Clear Pending Status', 'bp-group-moderation' ); ?>
 				</a>
-				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'view-debug', bp_get_group_permalink( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'view-debug', self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'View Group Debug Info', 'bp-group-moderation' ); ?>
 				</a>
 			</p>
@@ -624,7 +641,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 		}
 		
 		// Refresh the page without the query arg
-		bp_core_redirect( remove_query_arg( 'bp-group-mod-action', bp_get_group_permalink( $group ) ) );
+		bp_core_redirect( remove_query_arg( 'bp-group-mod-action', self::get_group_url( $group ) ) );
 		exit;
 	}
 
@@ -716,7 +733,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 
 Visit your group: %2$s', 'bp-group-moderation' ),
 					$group_name,
-					bp_get_group_permalink( $group )
+					self::get_group_url( $group )
 				);
 			} else {
 				$subject = sprintf( __( 'Your group "%s" was not approved', 'bp-group-moderation' ), $group_name );

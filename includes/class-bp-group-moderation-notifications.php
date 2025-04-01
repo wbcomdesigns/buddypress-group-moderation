@@ -108,7 +108,7 @@ class BP_Group_Moderation_Notifications {
 			}
 		} elseif ( 'group_approved' === $component_action ) {
 			$text = sprintf( __( 'Your group "%s" has been approved!', 'bp-group-moderation' ), $group->name );
-			$link = bp_get_group_permalink( $group );
+			$link = self::get_group_url( $group );
 		} elseif ( 'group_rejected' === $component_action ) {
 			$text = __( 'Your group was not approved by site administrators.', 'bp-group-moderation' );
 			$link = bp_get_loggedin_user_domain();

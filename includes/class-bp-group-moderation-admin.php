@@ -21,6 +21,23 @@ class BP_Group_Moderation_Admin {
 	 * @var object
 	 */
 	protected static $instance = null;
+	
+	
+	/**
+	 * Get group URL in a backward-compatible way.
+	 *
+	 * @param BP_Groups_Group $group The group object.
+	 * @return string
+	 */
+	protected static function get_group_url( $group ) {
+		if ( function_exists( 'bp_get_group_url' ) ) {
+			return bp_get_group_url( $group );
+		} elseif ( function_exists( 'bp_get_group_permalink' ) ) {
+			return bp_get_group_permalink( $group );
+		}
+		return '';
+	}
+
 
 	/**
 	 * Initialize the class.
@@ -67,12 +84,19 @@ class BP_Group_Moderation_Admin {
 	 * @param string $hook The current admin page.
 	 */
 	public function admin_enqueue_scripts( $hook ) {
-		if ( 'buddypress_page_bp-pending-groups' !== $hook ) {
+		
+		if ( strpos( $hook, 'bp-pending-groups' ) === false ) {
 			return;
 		}
 		
 		wp_enqueue_style( 'bp-group-moderation-admin', BP_GROUP_MODERATION_PLUGIN_URL . 'assets/css/admin.css', array(), BP_GROUP_MODERATION_VERSION );
-		wp_enqueue_script( 'bp-group-moderation-admin', BP_GROUP_MODERATION_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), BP_GROUP_MODERATION_VERSION, true );
+		wp_enqueue_script(
+			'bp-group-moderation-admin',
+			BP_GROUP_MODERATION_PLUGIN_URL . 'assets/js/admin.js',
+			array( 'jquery' ),
+			BP_GROUP_MODERATION_VERSION,
+			true
+		);
 		
 		wp_localize_script( 'bp-group-moderation-admin', 'bpGroupModeration', array(
 			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
@@ -82,12 +106,18 @@ class BP_Group_Moderation_Admin {
 			'confirmReject' => __( 'Are you sure you want to reject this group? This action cannot be undone.', 'bp-group-moderation' ),
 			'loadingText'   => __( 'Processing...', 'bp-group-moderation' ),
 		) );
+		
 	}
 
 	/**
 	 * Handle AJAX requests for group moderation actions.
 	 */
 	public function ajax_handle_group() {
+		
+		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+			@error_reporting( 0 );
+		}
+		
 		// Verify nonce.
 		check_ajax_referer( 'bp-group-moderation-nonce', 'nonce' );
 		
@@ -221,7 +251,7 @@ class BP_Group_Moderation_Admin {
 
 Visit your group: %2$s', 'bp-group-moderation' ),
 					$group_name,
-					bp_get_group_permalink( $group )
+					self::get_group_url( $group )
 				);
 			} else {
 				$subject = sprintf( __( 'Your group "%s" was not approved', 'bp-group-moderation' ), $group_name );
@@ -276,9 +306,10 @@ If you have questions about this decision, please contact the site administrator
 							?>
 							<tr id="group-<?php echo esc_attr( $group->id ); ?>">
 								<td>
-									<a href="<?php echo esc_url( bp_get_group_permalink( $group ) ); ?>" target="_blank">
-										<?php echo esc_html( $group->name ); ?>
-									</a>
+								<a href="<?php echo esc_url( self::get_group_url( $group ) ); ?>" target="_blank">
+									<?php echo esc_html( $group->name ); ?>
+								</a>
+
 								</td>
 								<td>
 									<a href="<?php echo esc_url( bp_core_get_user_domain( $group->creator_id ) ); ?>" target="_blank">
