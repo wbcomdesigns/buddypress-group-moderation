@@ -362,14 +362,20 @@ If you have questions about this decision, please contact the site administrator
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Pending Groups', 'bp-group-moderation' ); ?></h1>
 			
-			<div class="bp-group-moderation-settings">
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=bp-pending-groups&view=settings' ) ); ?>" class="button">
+			<div class="bp-group-moderation-settings">				
+				<a href="<?php echo esc_url( admin_url( 'admin.php?page=bp-pending-groups&view=settings&_wpnonce=' . wp_create_nonce( 'bp_pending_groups_settings' ) ) ); ?>" class="button">
 					<?php esc_html_e( 'Settings', 'bp-group-moderation' ); ?>
 				</a>
 			</div>
 			
-			<?php if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) : ?>
-				<?php $this->render_settings_page(); ?>
+			<?php 
+			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) :
+				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
+				if ( ! wp_verify_nonce( $nonce, 'bp_pending_groups_settings' ) ) {
+					wp_die( __( 'Security check failed.', 'bp-group-moderation' ) );
+				}
+			?>
+			<?php $this->render_settings_page(); ?>
 			<?php else : ?>
 				<?php if ( ! empty( $pending_groups ) ) : ?>
 					<div id="bp-group-moderation-messages"></div>
