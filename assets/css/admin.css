@@ -63,3 +63,7 @@
 .notice-dismiss {
     cursor: pointer;
 }
+
+.nav-tab-wrapper ul li#support a.nav-tab::before {
+    content: "\f101";
+}

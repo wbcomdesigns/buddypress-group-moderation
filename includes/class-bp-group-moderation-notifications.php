@@ -27,7 +27,7 @@ class BP_Group_Moderation_Notifications {
 	 */
 	private function __construct() {
 		// Only if notifications component is active.
-		if ( ! bp_is_active( 'notifications' ) ) {
+		if ( function_exists( 'bp_is_active' ) && ! bp_is_active( 'notifications' ) ) {
 			return;
 		}
 

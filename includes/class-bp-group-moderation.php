@@ -72,11 +72,6 @@ class BP_Group_Moderation {
 	 * Initialize the plugin components.
 	 */
 	public function init() {
-		// Check if BuddyPress is active.
-		if ( ! function_exists( 'buddypress' ) || ! bp_is_active( 'groups' ) ) {
-			add_action( 'admin_notices', array( $this, 'admin_notice_need_buddypress' ) );
-			return;
-		}
 
 		// Group creation hooks - Catch group creation in multiple stages
 		add_action( 'groups_create_group', array( $this, 'catch_new_group' ), 10, 3 );
@@ -109,17 +104,6 @@ class BP_Group_Moderation {
 		
 		// Handle admin actions
 		add_action( 'bp_actions', array( $this, 'handle_admin_test_actions' ) );
-	}
-
-	/**
-	 * Display admin notice if BuddyPress is not active.
-	 */
-	public function admin_notice_need_buddypress() {
-		?>
-		<div class="notice notice-error is-dismissible">
-			<p><?php esc_html_e( 'BuddyPress Group Moderation requires BuddyPress with the Groups component activated.', 'bp-group-moderation' ); ?></p>
-		</div>
-		<?php
 	}
 
 	/**

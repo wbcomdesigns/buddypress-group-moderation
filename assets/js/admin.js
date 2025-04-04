@@ -126,4 +126,20 @@
     log('Admin JavaScript Initialized');
     log('Localized Object:', bpGroupModeration);
 
+    // FAQ Accordion  
+    var bpolls_elmt = document.getElementsByClassName( "wbcom-faq-accordion" );
+    var k;
+    var bpolls_elmt_len = bpolls_elmt.length;
+    for (k = 0; k < bpolls_elmt_len; k++) {
+        bpolls_elmt[k].onclick = function() {
+        this.classList.toggle( "active" );
+        var panel = this.nextElementSibling;
+        if (panel.style.maxHeight) {
+            panel.style.maxHeight = null;
+        } else {
+            panel.style.maxHeight = panel.scrollHeight + "px";
+        }
+        }
+    }
+
 })(jQuery);
