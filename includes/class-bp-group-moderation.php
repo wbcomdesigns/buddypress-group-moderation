@@ -505,10 +505,10 @@ View the group: %4$s', 'bp-group-moderation' ),
 				<p>
 					<?php 
 					echo sprintf(
-						'Debug Info: Group ID: %d, Approval Status: %s, Requested Status: %s', 
-						$group_id, 
-						$approval_status ? $approval_status : 'Not set',
-						$requested_status ? $requested_status : 'Not set'
+						esc_html__( 'Debug Info: Group ID: %d, Approval Status: %s, Requested Status: %s', 'bp-group-moderation' ),
+						esc_html( $group_id ), 
+						esc_html( $approval_status ? $approval_status : 'Not set' ),
+						esc_html( $requested_status ? $requested_status : 'Not set' )
 					); 
 					?>
 				</p>
@@ -566,7 +566,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 			return;
 		}
 		
-		$action = sanitize_text_field( $_GET['bp-group-mod-action'] );
+		$action = sanitize_text_field( wp_unslash( $_GET['bp-group-mod-action'] ) );		
 		$group_id = bp_get_current_group_id();
 		$group = groups_get_group( $group_id );
 		
@@ -610,11 +610,11 @@ View the group: %4$s', 'bp-group-moderation' ),
 			// Display the debug info
 			echo '<div class="bp-feedback">';
 			echo '<h3>Group Debug Information</h3>';
-			echo '<p><strong>Group ID:</strong> ' . $group_id . '</p>';
-			echo '<p><strong>Group Status:</strong> ' . $group->status . '</p>';
-			echo '<p><strong>Created:</strong> ' . $group->date_created . '</p>';
-			echo '<p><strong>Creator ID:</strong> ' . $group->creator_id . '</p>';
-			echo '<p><strong>Description:</strong> ' . $group->description . '</p>';
+			echo '<p><strong>Group ID:</strong> ' . esc_html( $group_id ) . '</p>';
+			echo '<p><strong>Group Status:</strong> ' . esc_html( $group->status ) . '</p>';
+			echo '<p><strong>Created:</strong> ' . esc_html( $group->date_created ) . '</p>';
+			echo '<p><strong>Creator ID:</strong> ' . esc_html( $group->creator_id ) . '</p>';
+			echo '<p><strong>Description:</strong> ' . esc_html( $group->description ) . '</p>';
 			echo '<p><strong>Group Meta:</strong></p>';
 			echo '<ul>';
 			foreach ( $meta_data as $meta ) {

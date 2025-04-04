@@ -212,7 +212,7 @@ class BP_Group_Moderation_Admin {
 		}
 		
 		$group_id = isset( $_POST['group_id'] ) ? intval( $_POST['group_id'] ) : 0;
-		$action = isset( $_POST['action_type'] ) ? sanitize_text_field( $_POST['action_type'] ) : '';
+		$action = isset( $_POST['action_type'] ) ? sanitize_text_field( wp_unslash( $_POST['action_type'] ) ) : '';
 		
 		if ( ! $group_id || ! in_array( $action, array( 'approve', 'reject' ) ) ) {
 			wp_send_json_error( array( 'message' => __( 'Invalid request.', 'bp-group-moderation' ) ) );
@@ -372,7 +372,7 @@ If you have questions about this decision, please contact the site administrator
 			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) :
 				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 				if ( ! wp_verify_nonce( $nonce, 'bp_pending_groups_settings' ) ) {
-					wp_die( __( 'Security check failed.', 'bp-group-moderation' ) );
+					wp_die( esc_html__( 'Security check failed.', 'bp-group-moderation' ) );
 				}
 			?>
 			<?php $this->render_settings_page(); ?>

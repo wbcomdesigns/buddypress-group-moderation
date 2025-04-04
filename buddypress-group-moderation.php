@@ -95,5 +95,5 @@ function bp_group_moderation_required_plugin_admin_notice() {
 		);
 	}
 
-	echo '<div class="error"><p>' . $message . '</p></div>';
+	echo '<div class="error"><p>' . wp_kses_post( $message ) . '</p></div>';
 }
