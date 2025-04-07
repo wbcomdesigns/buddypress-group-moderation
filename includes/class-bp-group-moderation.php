@@ -544,15 +544,30 @@ View the group: %4$s', 'bp-group-moderation' ),
 		<div class="bp-feedback bp-group-moderation-admin-tools" style="margin-bottom: 15px; background: #f0f0f0; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
 			<h4><?php esc_html_e( 'Group Moderation Admin Tools', 'bp-group-moderation' ); ?></h4>
 			<p>
-				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'set-pending', self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+				<!-- Generate secure admin action URLs for group moderation.
+				Each link includes a nonce ('_wpnonce') created with a unique action name per group.
+				This protects against CSRF when the links are clicked. -->
+				<a href="<?php echo esc_url( add_query_arg( array(
+						'bp-group-mod-action' => 'set-pending',
+						'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
+					), self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'Set as Pending', 'bp-group-moderation' ); ?>
-				</a>
-				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'clear-pending', self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+				</a>				
+
+				<a href="<?php echo esc_url( add_query_arg( array(
+					'bp-group-mod-action' => 'clear-pending',
+					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
+				), self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'Clear Pending Status', 'bp-group-moderation' ); ?>
 				</a>
-				<a href="<?php echo esc_url( add_query_arg( 'bp-group-mod-action', 'view-debug', self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+
+				<a href="<?php echo esc_url( add_query_arg( array(
+					'bp-group-mod-action' => 'view-debug',
+					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
+				), self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'View Group Debug Info', 'bp-group-moderation' ); ?>
 				</a>
+
 			</p>
 		</div>
 		<?php
@@ -565,9 +580,18 @@ View the group: %4$s', 'bp-group-moderation' ),
 		if ( !bp_is_group() || !current_user_can('manage_options') || empty($_GET['bp-group-mod-action']) ) {
 			return;
 		}
-		
-		$action = sanitize_text_field( wp_unslash( $_GET['bp-group-mod-action'] ) );		
+
 		$group_id = bp_get_current_group_id();
+
+		// Verify the nonce for security to prevent CSRF attacks.
+		// wp_unslash is used to remove slashes added by WordPress, and sanitize_text_field ensures clean input.
+		if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'bp_group_mod_action_' . $group_id ) ) {
+			bp_core_add_message( __( 'Security check failed. Please try again.', 'bp-group-moderation' ), 'error' );
+			bp_core_redirect( bp_get_group_permalink( groups_get_group( $group_id ) ) );
+			exit;
+		}
+		$action = sanitize_text_field( wp_unslash( $_GET['bp-group-mod-action'] ) );		
+		
 		$group = groups_get_group( $group_id );
 		
 		if ( $action === 'set-pending' ) {
@@ -595,7 +619,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 				$group->save();
 				groups_delete_groupmeta( $group_id, 'requested_status' );
 			}
-			
+		
 			bp_core_add_message( __( 'Pending status has been cleared.', 'bp-group-moderation' ), 'success' );
 		}
 		elseif ( $action === 'view-debug' ) {
