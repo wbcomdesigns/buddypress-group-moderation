@@ -244,6 +244,7 @@ class BP_Group_Moderation_Admin {
 	 * @return bool Success status.
 	 */
 	public function approve_group( $group_id ) {
+		global $wpdb ;
 		// Get the originally requested status.
 		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
 		
@@ -253,10 +254,16 @@ class BP_Group_Moderation_Admin {
 		if ( ! $group ) {
 			return false;
 		}
-		
-		// Update the group to the requested status.
-		$group->status = $requested_status;
-		$result = $group->save();
+	
+		// Update the group to the requested status.		
+		$table_name = $wpdb->prefix . 'bp_groups';
+		$result     = $wpdb->update(
+			$table_name,
+			array( 'status' => $requested_status ),
+			array( 'id' => $group_id ),
+			array( '%s' ),
+			array( '%d' )
+		);
 		
 		if ( $result ) {
 			// Remove the pending flag.
