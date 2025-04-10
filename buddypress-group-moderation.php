@@ -97,3 +97,21 @@ function bp_group_moderation_required_plugin_admin_notice() {
 
 	echo '<div class="error"><p>' . wp_kses_post( $message ) . '</p></div>';
 }
+
+/**
+ * Redirect to plugin settings page after activation.
+ *
+ * @param string $plugin The plugin slug.
+ */
+function bp_group_moderation_activation_redirect_settings( $plugin ) {
+    if ( is_multisite() ) {
+       return;
+   }
+   if ( plugin_basename( __FILE__ ) === $plugin && class_exists( 'Buddypress' ) ) {
+       if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'activate' && isset( $_REQUEST['plugin'] ) && $_REQUEST['plugin'] === $plugin ) { //phpcs:ignore
+           wp_redirect( admin_url( 'admin.php?page=bp-group-moderation' ) );
+           exit;
+       }
+   }
+}
+add_action( 'activated_plugin', 'bp_group_moderation_activation_redirect_settings' );
