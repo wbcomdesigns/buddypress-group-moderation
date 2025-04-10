@@ -26,14 +26,9 @@ class BP_Group_Moderation_Notifications {
 	 * Initialize the class.
 	 */
 	private function __construct() {
-		// Only if notifications component is active.
-		if ( function_exists( 'bp_is_active' ) && ! bp_is_active( 'notifications' ) ) {
-			return;
-		}
 
-		// Register notification filters.
-		add_filter( 'bp_notifications_get_registered_components', array( $this, 'register_notifications_component' ) );
-		add_filter( 'bp_notifications_get_notifications_for_user', array( $this, 'format_notifications' ), 10, 8 );
+		add_action( 'bp_init',  array( $this, 'check_notifications_component' ) );
+		
 	}
 
 	/**
@@ -47,6 +42,19 @@ class BP_Group_Moderation_Notifications {
 			self::$instance = new self();
 		}
 		return self::$instance;
+	}
+
+
+	public function check_notifications_component() {
+		if ( ! function_exists( 'bp_is_active' ) || ! bp_is_active( 'notifications' ) ) {
+			return;
+		}
+		// Register notification filters.
+		add_filter( 'bp_notifications_get_registered_components', array( $this, 'register_notifications_component' ) );
+		add_filter( 'bp_groups_new_group_pending_notification', array( $this, 'wbcom_format_new_group_pending_notifications' ), 10, 5 );
+		add_filter( 'bp_groups_group_approved_notification', array( $this, 'wbcom_format_group_approved_notifications' ), 10, 5 );
+		add_filter( 'bp_groups_group_rejected_notification', array( $this, 'wbcom_format_group_rejected_notifications' ), 10, 5 );
+		
 	}
 
 	/**
@@ -70,62 +78,125 @@ class BP_Group_Moderation_Notifications {
 		return $component_names;
 	}
 
-	/**
-	 * Format the notifications for our component.
+		/**
+	 * Formats the BuddyPress group moderation notification for pending groups.
 	 *
-	 * @param string $action            The notification action.
-	 * @param int    $item_id           The item ID.
-	 * @param int    $secondary_item_id The secondary item ID.
-	 * @param int    $total_items       The total number of items to format.
-	 * @param string $format            The format to return. 'string' or 'object'.
-	 * @param string $component_action  The component action.
-	 * @param string $component_name    The component name.
-	 * @param int    $id                The notification ID.
-	 * @return string|object
+	 * This callback formats the notification text and link shown to admins when
+	 * one or more new BuddyPress groups are pending approval. The output is used 
+	 * by the 'bp_groups_new_group_pending_notification' filter.
+	 *
+	 * @param string $action            Default notification text.
+	 * @param int    $item_id           Group ID (primary item).
+	 * @param int    $secondary_item_id Not used in this context.
+	 * @param int    $total_items       Number of pending groups.
+	 * @param string $format            Desired format: 'string' or 'array'.
+	 *
+	 * @return string|array Modified notification content (string or array format).
 	 */
-	public function format_notifications( $action, $item_id, $secondary_item_id, $total_items, $format, $component_action, $component_name, $id ) {
-		// Only handle groups component notifications.
-		if ( 'groups' !== $component_name ) {
-			return $action;
-		}
-
-		// Handle our specific component actions.
-		$group_id = $item_id;
-		$group = groups_get_group( $group_id );
-		
+	public function wbcom_format_new_group_pending_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
+		$group = groups_get_group( $item_id );
+	
 		if ( ! $group ) {
 			return $action;
 		}
 
-		// Format based on the component action.
-		if ( 'new_group_pending' === $component_action ) {
-			if ( 1 === $total_items ) {
-				$text = sprintf( __( 'New group "%s" is pending approval', 'bp-group-moderation' ), $group->name );
-				$link = admin_url( 'admin.php?page=bp-pending-groups' );
-			} else {
-				$text = sprintf( __( '%d new groups are pending approval', 'bp-group-moderation' ), $total_items );
-				$link = admin_url( 'admin.php?page=bp-pending-groups' );
-			}
-		} elseif ( 'group_approved' === $component_action ) {
-			$text = sprintf( __( 'Your group "%s" has been approved!', 'bp-group-moderation' ), $group->name );
-			$link = self::get_group_url( $group );
-		} elseif ( 'group_rejected' === $component_action ) {
-			$text = __( 'Your group was not approved by site administrators.', 'bp-group-moderation' );
-			$link = bp_get_loggedin_user_domain();
-		} else {
+		$text = (1 === $total_items)
+			? sprintf(__('New group "%s" is pending approval', 'bp-group-moderation'), $group->name)
+			: sprintf(__('%d new groups are pending approval', 'bp-group-moderation'), $total_items);
+		$link = admin_url( 'admin.php?page=bp-pending-groups' );
+
+		if ( empty( $text ) || empty( $link ) ) {
 			return $action;
 		}
-		
-		// WordPress Toolbar.
+
 		if ( 'string' === $format ) {
-			$return = '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
-		} else {
-			$return = array(
-				'text' => $text,
-				'link' => $link
-			);
+			return '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
 		}
+	
+		return array(
+			'text' => $text,
+			'link' => $link,
+		);
+
+	}
+
+	/**
+	 * Formats the BuddyPress group moderation notification for approved groups.
+	 *
+	 * This callback formats the notification text and link shown to admins when
+	 * one or more new BuddyPress groups are approved. The output is used 
+	 * by the 'bp_groups_group_approved_notification' filter.
+	 *
+	 * @param string $action            Default notification text.
+	 * @param int    $item_id           Group ID (primary item).
+	 * @param int    $secondary_item_id Not used in this context.
+	 * @param int    $total_items       Number of approved groups.
+	 * @param string $format            Desired format: 'string' or 'array'.
+	 *
+	 * @return string|array Modified notification content (string or array format).
+	 */
+	public function wbcom_format_group_approved_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
+		$group = groups_get_group( $item_id );
+	
+		if ( ! $group ) {
+			return $action;
+		}
+
+		$text = sprintf( __( 'Your group "%s" has been approved!', 'bp-group-moderation' ), $group->name );
+		$link = bp_get_group_permalink( $group );
+
+		if ( empty( $text ) || empty( $link ) ) {
+			return $action;
+		}
+
+		if ( 'string' === $format ) {
+			return '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
+		}
+	
+		return array(
+			'text' => $text,
+			'link' => $link,
+		);
 		
-		return $return;
+	}
+
+	/**
+	 * Formats the BuddyPress group moderation notification for rejected groups.
+	 *
+	 * This callback formats the notification text and link shown to admins when
+	 * one or more new BuddyPress groups are rejected approval. The output is used 
+	 * by the 'bp_groups_group_rejected_notification' filter.
+	 *
+	 * @param string $action            Default notification text.
+	 * @param int    $item_id           Group ID (primary item).
+	 * @param int    $secondary_item_id Not used in this context.
+	 * @param int    $total_items       Number of rejected groups.
+	 * @param string $format            Desired format: 'string' or 'array'.
+	 *
+	 * @return string|array Modified notification content (string or array format).
+	 */
+	public function wbcom_format_group_rejected_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
+		$group = groups_get_group( $item_id );
+	
+		if ( ! $group ) {
+			return $action;
+		}
+
+		$text = __( 'Your group was not approved by site administrators.', 'bp-group-moderation' );
+		$link = bp_get_loggedin_user_domain();
+
+		if ( empty( $text ) || empty( $link ) ) {
+			return $action;
+		}
+
+		if ( 'string' === $format ) {
+			return '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
+		}
+	
+		return array(
+			'text' => $text,
+			'link' => $link,
+		);
+		
 	}
 }
