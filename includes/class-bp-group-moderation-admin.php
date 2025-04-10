@@ -21,15 +21,28 @@ class BP_Group_Moderation_Admin {
 	 * @var object
 	 */
 	protected static $instance = null;
-	
-	
+
+	/**
+	 * Initialize the class.
+	 */
+	private function __construct() {		
+		// Admin hooks.
+		add_action( 'bp_admin_menu', array( $this, 'bp_group_moderation_add_admin_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'bp_group_moderation_admin_enqueue_scripts' ) );
+		
+		// AJAX handlers.
+		add_action( 'wp_ajax_bp_group_moderation_handle_group', array( $this, 'bp_group_moderation_ajax_handle_group' ) );
+
+		add_action( 'admin_menu', array( $this,'bp_group_moderation_add_plugin_settings_page' ) );
+	}
+
 	/**
 	 * Get group URL in a backward-compatible way.
 	 *
 	 * @param BP_Groups_Group $group The group object.
 	 * @return string
 	 */
-	protected static function get_group_url( $group ) {
+	protected static function bp_group_moderation_get_group_url( $group ) {
 		if ( function_exists( 'bp_get_group_url' ) ) {
 			return bp_get_group_url( $group );
 		} elseif ( function_exists( 'bp_get_group_permalink' ) ) {
@@ -38,20 +51,6 @@ class BP_Group_Moderation_Admin {
 		return '';
 	}
 
-
-	/**
-	 * Initialize the class.
-	 */
-	private function __construct() {		
-		// Admin hooks.
-		add_action( 'bp_admin_menu', array( $this, 'add_admin_menu' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		
-		// AJAX handlers.
-		add_action( 'wp_ajax_bp_group_moderation_handle_group', array( $this, 'ajax_handle_group' ) );
-
-		add_action( 'admin_menu', array( $this,'bp_group_moderation_add_plugin_settings_page' ) );
-	}
 
 	/**
 	 * Add admin sub menu for plugin settings.
@@ -153,7 +152,7 @@ class BP_Group_Moderation_Admin {
 	/**
 	 * Add admin menu for managing pending groups.
 	 */
-	public function add_admin_menu() {
+	public function bp_group_moderation_add_admin_menu() {
 		add_submenu_page(
 			'bp-groups',
 			__( 'Pending Groups', 'bp-group-moderation' ),
@@ -169,7 +168,7 @@ class BP_Group_Moderation_Admin {
 	 *
 	 * @param string $hook The current admin page.
 	 */
-	public function admin_enqueue_scripts( $hook ) {		
+	public function bp_group_moderation_admin_enqueue_scripts( $hook ) {		
 		if ( strpos( $hook, 'bp-pending-groups' ) === false && strpos( $hook, 'bp-group-moderation' ) === false ) {
 				return;
 		}
@@ -197,7 +196,7 @@ class BP_Group_Moderation_Admin {
 	/**
 	 * Handle AJAX requests for group moderation actions.
 	 */
-	public function ajax_handle_group() {
+	public function bp_group_moderation_ajax_handle_group() {
 		
 		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 			@error_reporting( 0 );
@@ -223,10 +222,10 @@ class BP_Group_Moderation_Admin {
 		
 		// Process the action.
 		if ( 'approve' === $action ) {
-			$result = $this->approve_group( $group_id );
+			$result = $this->bp_group_moderation_approve_group( $group_id );
 			$message = __( 'Group has been approved successfully.', 'bp-group-moderation' );
 		} elseif ( 'reject' === $action ) {
-			$result = $this->reject_group( $group_id );
+			$result = $this->bp_group_moderation_reject_group( $group_id );
 			$message = __( 'Group has been rejected.', 'bp-group-moderation' );
 		}
 		
@@ -243,7 +242,7 @@ class BP_Group_Moderation_Admin {
 	 * @param int $group_id The group ID.
 	 * @return bool Success status.
 	 */
-	public function approve_group( $group_id ) {
+	public function bp_group_moderation_approve_group( $group_id ) {
 		global $wpdb ;
 		// Get the originally requested status.
 		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
@@ -284,16 +283,13 @@ class BP_Group_Moderation_Admin {
 	 * @param int $group_id The group ID.
 	 * @return bool Success status.
 	 */
-	public function reject_group( $group_id ) {
+	public function bp_group_moderation_reject_group( $group_id ) {
 		// Get group info before deletion.
 		$group = groups_get_group( $group_id );
 		
 		if ( ! $group ) {
 			return false;
 		}
-		
-		$creator_id = $group->creator_id;
-		$group_name = $group->name;
 		
 		// Notify the creator before deleting the group.
 		$this->notify_user_of_group_decision( $group, 'rejected' );
@@ -343,7 +339,7 @@ class BP_Group_Moderation_Admin {
 
 Visit your group: %2$s', 'bp-group-moderation' ),
 					$group_name,
-					self::get_group_url( $group )
+					self::bp_group_moderation_get_group_url( $group )
 				);
 			} else {
 				$subject = sprintf( __( 'Your group "%s" was not approved', 'bp-group-moderation' ), $group_name );
@@ -364,7 +360,7 @@ If you have questions about this decision, please contact the site administrator
 	 */
 	public function admin_page_content() {
 		// Get pending groups.
-		$pending_groups = $this->get_pending_groups();
+		$pending_groups = $this->bp_group_moderation_get_pending_groups();
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Pending Groups', 'bp-group-moderation' ); ?></h1>
@@ -404,7 +400,7 @@ If you have questions about this decision, please contact the site administrator
 							?>
 							<tr id="group-<?php echo esc_attr( $group->id ); ?>">
 								<td>
-								<a href="<?php echo esc_url( self::get_group_url( $group ) ); ?>" target="_blank">
+								<a href="<?php echo esc_url( self::bp_group_moderation_get_group_url( $group ) ); ?>" target="_blank">
 									<?php echo esc_html( $group->name ); ?>
 								</a>
 
@@ -528,7 +524,7 @@ If you have questions about this decision, please contact the site administrator
 	 *
 	 * @return array Array of group objects.
 	 */
-	public function get_pending_groups() {
+	public function bp_group_moderation_get_pending_groups() {
 		global $wpdb, $bp;
 		
 		$groups_table = $bp->groups->table_name;

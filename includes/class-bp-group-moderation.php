@@ -21,31 +21,14 @@ class BP_Group_Moderation {
 	 * @var object
 	 */
 	protected static $instance = null;
-	
-	
-	/**
-	 * Get group URL in a backward-compatible way.
-	 *
-	 * @param BP_Groups_Group $group The group object.
-	 * @return string
-	 */
-	protected static function get_group_url( $group ) {
-		if ( function_exists( 'bp_get_group_url' ) ) {
-			return bp_get_group_url( $group );
-		} elseif ( function_exists( 'bp_get_group_permalink' ) ) {
-			return bp_get_group_permalink( $group );
-		}
-		return '';
-	}
-
 
 	/**
 	 * Initialize the plugin.
 	 */
 	private function __construct() {
 		// Load text domain.
-		add_action( 'bp_init', array( $this, 'load_plugin_textdomain' ) );
-		add_action( 'bp_loaded', array( $this, 'init' ) );
+		add_action( 'bp_init', array( $this, 'bp_group_moderation_load_plugin_textdomain' ) );
+		add_action( 'bp_loaded', array( $this, 'bp_group_moderation_init' ) );
 	}
 
 	/**
@@ -62,48 +45,63 @@ class BP_Group_Moderation {
 	}
 
 	/**
+	 * Get group URL in a backward-compatible way.
+	 *
+	 * @param BP_Groups_Group $group The group object.
+	 * @return string
+	 */
+	protected static function bp_group_moderation_get_group_url( $group ) {
+		if ( function_exists( 'bp_get_group_url' ) ) {
+			return bp_get_group_url( $group );
+		} elseif ( function_exists( 'bp_get_group_permalink' ) ) {
+			return bp_get_group_permalink( $group );
+		}
+		return '';
+	}
+
+	/**
 	 * Load the plugin text domain for translation.
 	 */
-	public function load_plugin_textdomain() {
+	public function bp_group_moderation_load_plugin_textdomain() {
 		load_plugin_textdomain( 'bp-group-moderation', false, dirname( plugin_basename( BP_GROUP_MODERATION_PLUGIN_FILE ) ) . '/languages/' );
 	}
 
 	/**
 	 * Initialize the plugin components.
 	 */
-	public function init() {
+	public function bp_group_moderation_init() {
 
 		// Group creation hooks - Catch group creation in multiple stages
-		add_action( 'groups_create_group', array( $this, 'catch_new_group' ), 10, 3 );
-		add_action( 'groups_created_group', array( $this, 'early_catch_new_group' ), 1, 2 );
-		add_action( 'groups_group_after_save', array( $this, 'set_group_to_pending' ), 20 );
+		add_action( 'groups_create_group', array( $this, 'bp_group_moderation_catch_new_group' ), 10, 3 );
+		add_action( 'groups_created_group', array( $this, 'bp_group_moderation_early_catch_new_group' ), 1, 2 );
+		add_action( 'groups_group_after_save', array( $this, 'bp_group_moderation_set_group_to_pending' ), 20 );
 		
 		// Intercept group status changes directly
-		add_filter( 'bp_group_status_change', array( $this, 'intercept_status_change' ), 10, 3 );
+		add_filter( 'bp_group_status_change', array( $this, 'bp_group_moderation_intercept_status_change' ), 10, 3 );
 		
 		// Filter group queries to hide pending groups
-		add_filter( 'bp_groups_get_groups', array( $this, 'filter_pending_groups' ), 10, 2 );
-		add_filter( 'bp_activity_get', array( $this, 'filter_pending_groups_activity' ), 10, 1 );
+		add_filter( 'bp_groups_get_groups', array( $this, 'bp_group_moderation_filter_pending_groups' ), 10, 2 );
+		add_filter( 'bp_activity_get', array( $this, 'bp_group_moderation_filter_pending_groups_activity' ), 10, 1 );
 		
 		// Display hooks.
-		add_action( 'bp_before_group_header', array( $this, 'display_pending_notice' ) );
+		add_action( 'bp_before_group_header', array( $this, 'bp_group_moderation_display_pending_notice' ) );
 
 		// Schedule regular checks for pending groups that should be hidden
-		add_action( 'bp_group_moderation_hourly_check', array( $this, 'check_pending_groups_status' ) );
+		add_action( 'bp_group_moderation_hourly_check', array( $this, 'bp_group_moderation_check_pending_groups_status' ) );
 		if ( ! wp_next_scheduled( 'bp_group_moderation_hourly_check' ) ) {
 			wp_schedule_event( time(), 'hourly', 'bp_group_moderation_hourly_check' );
 		}
 
 		// Add hook for direct database access
-		add_action( 'bp_group_moderation_verify_status', array( $this, 'verify_group_status' ) );
+		add_action( 'bp_group_moderation_verify_status', array( $this, 'bp_group_moderation_verify_group_status' ) );
 		
 		// Debug hook for admin users - add a button to test the function
 		if ( current_user_can('manage_options') && bp_is_group() ) {
-			add_action( 'bp_before_group_header', array( $this, 'add_admin_test_buttons' ) );
+			add_action( 'bp_before_group_header', array( $this, 'bp_group_moderation_add_admin_test_buttons' ) );
 		}
 		
 		// Handle admin actions
-		add_action( 'bp_actions', array( $this, 'handle_admin_test_actions' ) );
+		add_action( 'bp_actions', array( $this, 'bp_group_moderation_handle_admin_test_actions' ) );
 	}
 
 	/**
@@ -114,7 +112,7 @@ class BP_Group_Moderation {
 	 * @param object $group The group object.
 	 * @return string The status to use
 	 */
-	public function intercept_status_change( $new_status, $old_status, $group ) {
+	public function bp_group_moderation_intercept_status_change( $new_status, $old_status, $group ) {
 		// Check if this group is pending
 		$approval_status = groups_get_groupmeta( $group->id, 'approval_status', true );
 		
@@ -142,7 +140,7 @@ class BP_Group_Moderation {
 	 * @param int $group_id The group ID.
 	 * @param BP_Groups_Group $group The group object.
 	 */
-	public function early_catch_new_group( $group_id, $group ) {
+	public function bp_group_moderation_early_catch_new_group( $group_id, $group ) {
 		if ( defined('WP_DEBUG') && WP_DEBUG ) {
 			error_log( 'BP Group Moderation: Early catch new group - ID: ' . $group_id );
 		}
@@ -165,7 +163,7 @@ class BP_Group_Moderation {
 	 * @param BP_Groups_Member $member The member object.
 	 * @param BP_Groups_Group $group The group object.
 	 */
-	public function catch_new_group( $group_id, $member, $group ) {
+	public function bp_group_moderation_catch_new_group( $group_id, $member, $group ) {
 		if ( defined('WP_DEBUG') && WP_DEBUG ) {
 			error_log( 'BP Group Moderation: Catch new group - ID: ' . $group_id );
 		}
@@ -186,7 +184,7 @@ class BP_Group_Moderation {
 	 *
 	 * @param BP_Groups_Group $group The group object.
 	 */
-	public function set_group_to_pending( $group ) {
+	public function bp_group_moderation_set_group_to_pending( $group ) {
 		if ( defined('WP_DEBUG') && WP_DEBUG ) {
 			error_log( 'BP Group Moderation: Processing group - ID: ' . $group->id . ', Status: ' . $group->status );
 		}
@@ -317,7 +315,7 @@ class BP_Group_Moderation {
 	 *
 	 * @param int $group_id The group ID.
 	 */
-	public function verify_group_status( $group_id ) {
+	public function bp_group_moderation_verify_group_status( $group_id ) {
 		$group = groups_get_group( $group_id );
 		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
 		
@@ -333,7 +331,7 @@ class BP_Group_Moderation {
 	/**
 	 * Scheduled task to check all pending groups and ensure they're hidden
 	 */
-	public function check_pending_groups_status() {
+	public function bp_group_moderation_check_pending_groups_status() {
 		global $wpdb, $bp;
 		
 		// Get all pending group IDs
@@ -376,7 +374,7 @@ class BP_Group_Moderation {
 			'fields'  => 'ID',
 		) );
 		
-		$group_url = self::get_group_url( $group );
+		$group_url = self::bp_group_moderation_get_group_url( $group );
 		$admin_url = admin_url( 'admin.php?page=bp-pending-groups' );
 		
 		$subject = sprintf( __( 'New Group Pending Approval: %s', 'bp-group-moderation' ), $group->name );
@@ -423,7 +421,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 	 * @param array $args   Array of arguments.
 	 * @return array Modified array of group objects.
 	 */
-	public function filter_pending_groups( $groups, $args ) {
+	public function bp_group_moderation_filter_pending_groups( $groups, $args ) {
 		// Don't filter for admins.
 		if ( current_user_can( 'manage_options' ) ) {
 			return $groups;
@@ -454,7 +452,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 	 * @param array $args Array of arguments.
 	 * @return array Modified array of arguments.
 	 */
-	public function filter_pending_groups_activity( $args ) {
+	public function bp_group_moderation_filter_pending_groups_activity( $args ) {
 		// Don't filter for admins.
 		if ( current_user_can( 'manage_options' ) || ! bp_is_active( 'activity' ) ) {
 			return $args;
@@ -489,7 +487,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 	/**
 	 * Display a notice for pending groups.
 	 */
-	public function display_pending_notice() {
+	public function bp_group_moderation_display_pending_notice() {
 		if ( ! bp_is_group() ) {
 			return;
 		}
@@ -538,7 +536,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 	/**
 	 * Add admin test buttons for debugging.
 	 */
-	public function add_admin_test_buttons() {
+	public function bp_group_moderation_add_admin_test_buttons() {
 		$group_id = bp_get_current_group_id();
 		?>
 		<div class="bp-feedback bp-group-moderation-admin-tools" style="margin-bottom: 15px; background: #f0f0f0; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
@@ -550,21 +548,21 @@ View the group: %4$s', 'bp-group-moderation' ),
 				<a href="<?php echo esc_url( add_query_arg( array(
 						'bp-group-mod-action' => 'set-pending',
 						'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
-					), self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+					), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'Set as Pending', 'bp-group-moderation' ); ?>
 				</a>				
 
 				<a href="<?php echo esc_url( add_query_arg( array(
 					'bp-group-mod-action' => 'clear-pending',
 					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
-				), self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+				), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'Clear Pending Status', 'bp-group-moderation' ); ?>
 				</a>
 
 				<a href="<?php echo esc_url( add_query_arg( array(
 					'bp-group-mod-action' => 'view-debug',
 					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
-				), self::get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
+				), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
 					<?php esc_html_e( 'View Group Debug Info', 'bp-group-moderation' ); ?>
 				</a>
 
@@ -576,7 +574,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 	/**
 	 * Handle admin test actions.
 	 */
-	public function handle_admin_test_actions() {
+	public function bp_group_moderation_handle_admin_test_actions() {
 		if ( !bp_is_group() || !current_user_can('manage_options') || empty($_GET['bp-group-mod-action']) ) {
 			return;
 		}
@@ -649,7 +647,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 		}
 		
 		// Refresh the page without the query arg
-		bp_core_redirect( remove_query_arg( 'bp-group-mod-action', self::get_group_url( $group ) ) );
+		bp_core_redirect( remove_query_arg( 'bp-group-mod-action', self::bp_group_moderation_get_group_url( $group ) ) );
 		exit;
 	}
 
@@ -741,7 +739,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 
 Visit your group: %2$s', 'bp-group-moderation' ),
 					$group_name,
-					self::get_group_url( $group )
+					self::bp_group_moderation_get_group_url( $group )
 				);
 			} else {
 				$subject = sprintf( __( 'Your group "%s" was not approved', 'bp-group-moderation' ), $group_name );

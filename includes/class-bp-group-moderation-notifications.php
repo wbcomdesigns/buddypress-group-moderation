@@ -27,7 +27,7 @@ class BP_Group_Moderation_Notifications {
 	 */
 	private function __construct() {
 
-		add_action( 'bp_init',  array( $this, 'check_notifications_component' ) );
+		add_action( 'bp_init',  array( $this, 'bp_group_moderation_check_notifications_component' ) );
 		
 	}
 
@@ -45,15 +45,15 @@ class BP_Group_Moderation_Notifications {
 	}
 
 
-	public function check_notifications_component() {
+	public function bp_group_moderation_check_notifications_component() {
 		if ( ! function_exists( 'bp_is_active' ) || ! bp_is_active( 'notifications' ) ) {
 			return;
 		}
 		// Register notification filters.
-		add_filter( 'bp_notifications_get_registered_components', array( $this, 'register_notifications_component' ) );
-		add_filter( 'bp_groups_new_group_pending_notification', array( $this, 'wbcom_format_new_group_pending_notifications' ), 10, 5 );
-		add_filter( 'bp_groups_group_approved_notification', array( $this, 'wbcom_format_group_approved_notifications' ), 10, 5 );
-		add_filter( 'bp_groups_group_rejected_notification', array( $this, 'wbcom_format_group_rejected_notifications' ), 10, 5 );
+		add_filter( 'bp_notifications_get_registered_components', array( $this, 'bp_group_moderation_register_notifications_component' ) );
+		add_filter( 'bp_groups_new_group_pending_notification', array( $this, 'bp_group_moderation_format_new_group_pending_notifications' ), 10, 5 );
+		add_filter( 'bp_groups_group_approved_notification', array( $this, 'bp_group_moderation_format_group_approved_notifications' ), 10, 5 );
+		add_filter( 'bp_groups_group_rejected_notification', array( $this, 'bp_group_moderation_format_group_rejected_notifications' ), 10, 5 );
 		
 	}
 
@@ -63,7 +63,7 @@ class BP_Group_Moderation_Notifications {
 	 * @param array $component_names Array of component names.
 	 * @return array
 	 */
-	public function register_notifications_component( $component_names = array() ) {
+	public function bp_group_moderation_register_notifications_component( $component_names = array() ) {
 		// Force $component_names to be an array
 		if ( ! is_array( $component_names ) ) {
 			$component_names = array();
@@ -83,7 +83,7 @@ class BP_Group_Moderation_Notifications {
 	 *
 	 * This callback formats the notification text and link shown to admins when
 	 * one or more new BuddyPress groups are pending approval. The output is used 
-	 * by the 'bp_groups_new_group_pending_notification' filter.
+	 * by the 'bp_group_moderation_format_new_group_pending_notifications' filter.
 	 *
 	 * @param string $action            Default notification text.
 	 * @param int    $item_id           Group ID (primary item).
@@ -93,7 +93,7 @@ class BP_Group_Moderation_Notifications {
 	 *
 	 * @return string|array Modified notification content (string or array format).
 	 */
-	public function wbcom_format_new_group_pending_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
+	public function bp_group_moderation_format_new_group_pending_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
 		$group = groups_get_group( $item_id );
 	
 		if ( ! $group ) {
@@ -135,7 +135,7 @@ class BP_Group_Moderation_Notifications {
 	 *
 	 * @return string|array Modified notification content (string or array format).
 	 */
-	public function wbcom_format_group_approved_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
+	public function bp_group_moderation_format_group_approved_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
 		$group = groups_get_group( $item_id );
 	
 		if ( ! $group ) {
@@ -175,7 +175,7 @@ class BP_Group_Moderation_Notifications {
 	 *
 	 * @return string|array Modified notification content (string or array format).
 	 */
-	public function wbcom_format_group_rejected_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
+	public function bp_group_moderation_format_group_rejected_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
 		$group = groups_get_group( $item_id );
 	
 		if ( ! $group ) {
