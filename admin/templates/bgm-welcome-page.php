@@ -5,8 +5,8 @@
  * @link       https://wbcomdesigns.com/
  * @since      1.0.0
  *
- * @package    Buddypress_Group_Moderation
- * @subpackage Buddypress_Group_Moderation/admin/inc
+ * @package    BuddyPress_Group_Moderation
+ * @subpackage BuddyPress_Group_Moderation/admin/inc
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

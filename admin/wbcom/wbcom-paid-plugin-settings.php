@@ -4,7 +4,7 @@
  *
  * @since    1.0.0
  * @author   Wbcom Designs
- * @package  Buddypress_Group_Moderation
+ * @package  BuddyPress_Group_Moderation
  */
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;

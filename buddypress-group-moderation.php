@@ -46,11 +46,11 @@ add_action( 'plugins_loaded', 'bp_group_moderation_init' );
  * Activation hook for the plugin.
  */
 function bp_group_moderation_activate() {
-	// Set default options.
-	add_option( 'bp_group_moderation_auto_approve_admin', true );
-	add_option( 'bp_group_moderation_hide_pending', true );
-	add_option( 'bp_group_moderation_send_emails', true );
-}
+		// Set default options.
+		add_option( 'bp_group_moderation_auto_approve_admin', true );
+		add_option( 'bp_group_moderation_hide_pending', true );
+		add_option( 'bp_group_moderation_send_emails', true );
+	}
 register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
 
 /**
@@ -89,7 +89,7 @@ function bp_group_moderation_required_plugin_admin_notice() {
 		);
 	} elseif ( ! bp_is_active( 'groups' ) ) {
 		$message = sprintf(
-			esc_html__( '%1$s requires the %2$s to be active in BuddyPress settings.', 'bp-group-moderation' ),
+			esc_html__( '%1$s requires the %2$s to be enabled in the BuddyPress settings.', 'bp-group-moderation' ),
 			'<strong>' . esc_html( $plugin_name ) . '</strong>',
 			'<strong>' . esc_html( $bp_groups ) . '</strong>'
 		);
@@ -106,8 +106,8 @@ function bp_group_moderation_required_plugin_admin_notice() {
 function bp_group_moderation_activation_redirect_settings( $plugin ) {
     if ( is_multisite() ) {
        return;
-   }
-   if ( plugin_basename( __FILE__ ) === $plugin && class_exists( 'Buddypress' ) ) {
+    }
+   if ( plugin_basename( __FILE__ ) === $plugin && class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) ) {
        if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'activate' && isset( $_REQUEST['plugin'] ) && $_REQUEST['plugin'] === $plugin ) { //phpcs:ignore
            wp_redirect( admin_url( 'admin.php?page=bp-group-moderation' ) );
            exit;
