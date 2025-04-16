@@ -359,6 +359,30 @@ If you have questions about this decision, please contact the site administrator
 	 * Render the admin page content for managing pending groups.
 	 */
 	public function admin_page_content() {
+		
+		if( isset( $_GET['id'] ) && isset( $_GET['_wp_nonce'] ) ) {
+
+			if( empty( $_GET['id'] ) || empty( $_GET['_wp_nonce'] ) ) {
+				return;
+			}
+			$nonce_value     = sanitize_text_field( wp_unslash( $_GET['_wp_nonce'] ) ); 
+			$notification_id = sanitize_text_field( wp_unslash( $_GET['id'] ) ); 
+
+			$notification_id = intval( $notification_id ?? 0 );
+
+			if(  ! wp_verify_nonce( $nonce_value, 'bp_group_moderation_notification_nonce'  ) ) { 
+				return;
+			}
+				
+			if ( class_exists('BP_Notifications_Notification') ) {
+				BP_Notifications_Notification::update(
+					array( 'is_new' => 0 ),
+					array( 'id'     => $notification_id )
+				);
+
+			}
+		}
+
 		// Get pending groups.
 		$pending_groups = $this->bp_group_moderation_get_pending_groups();
 		?>
