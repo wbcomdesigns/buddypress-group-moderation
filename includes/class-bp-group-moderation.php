@@ -72,9 +72,7 @@ class BP_Group_Moderation {
 	public function bp_group_moderation_init() {
 
 		// Group creation hooks - Catch group creation in multiple stages
-		add_action( 'groups_create_group', array( $this, 'bp_group_moderation_catch_new_group' ), 10, 3 );
-		add_action( 'groups_created_group', array( $this, 'bp_group_moderation_early_catch_new_group' ), 1, 2 );
-		add_action( 'groups_group_after_save', array( $this, 'bp_group_moderation_set_group_to_pending' ), 20 );
+		add_action( 'groups_group_create_complete', array( $this, 'bp_group_moderation_set_group_to_pending' ), 20, 1 );
 		
 		// Intercept group status changes directly
 		add_filter( 'bp_group_status_change', array( $this, 'bp_group_moderation_intercept_status_change' ), 10, 3 );
@@ -93,7 +91,7 @@ class BP_Group_Moderation {
 		}
 
 		// Add hook for direct database access
-		add_action( 'bp_group_moderation_verify_status', array( $this, 'bp_group_moderation_verify_group_status' ) );
+		add_action( 'bp_group_moderation_verify_status', array( $this, 'bp_group_moderation_verify_group_status' ), 10, 1 );
 		
 		// Debug hook for admin users - add a button to test the function
 		if ( current_user_can('manage_options') && bp_is_group() ) {
@@ -133,80 +131,31 @@ class BP_Group_Moderation {
 		
 		return $new_status;
 	}
-	
-	/**
-	 * Early catch for newly created groups
-	 *
-	 * @param int $group_id The group ID.
-	 * @param BP_Groups_Group $group The group object.
-	 */
-	public function bp_group_moderation_early_catch_new_group( $group_id, $group ) {
-		if ( defined('WP_DEBUG') && WP_DEBUG ) {
-			error_log( 'BP Group Moderation: Early catch new group - ID: ' . $group_id );
-		}
-		
-		// Set the is_new flag explicitly
-		$group->is_new = true;
-		
-		// Mark this as a new group in a temp transient (helps handle race conditions)
-		set_transient( 'bp_new_group_' . $group_id, true, 300 ); // 5 minutes expiration
-		
-		// Apply immediately and schedule a check
-		$this->process_new_group($group);
-		wp_schedule_single_event( time() + 5, 'bp_group_moderation_verify_status', array( $group_id ) );
-	}
-	
-	/**
-	 * Explicitly handle new groups from the groups_create_group action.
-	 *
-	 * @param int $group_id The group ID.
-	 * @param BP_Groups_Member $member The member object.
-	 * @param BP_Groups_Group $group The group object.
-	 */
-	public function bp_group_moderation_catch_new_group( $group_id, $member, $group ) {
-		if ( defined('WP_DEBUG') && WP_DEBUG ) {
-			error_log( 'BP Group Moderation: Catch new group - ID: ' . $group_id );
-		}
-		
-		// Set the is_new flag explicitly
-		$group->is_new = true;
-		
-		// Mark this as a new group
-		set_transient( 'bp_new_group_' . $group_id, true, 300 ); // 5 minutes expiration
-		
-		// Apply immediately and schedule a check
-		$this->process_new_group($group);
-		wp_schedule_single_event( time() + 5, 'bp_group_moderation_verify_status', array( $group_id ) );
-	}
 
 	/**
 	 * Set a newly created group to pending status.
 	 *
 	 * @param BP_Groups_Group $group The group object.
 	 */
-	public function bp_group_moderation_set_group_to_pending( $group ) {
-		if ( defined('WP_DEBUG') && WP_DEBUG ) {
-			error_log( 'BP Group Moderation: Processing group - ID: ' . $group->id . ', Status: ' . $group->status );
+	public function bp_group_moderation_set_group_to_pending( $group_id ) {
+		
+		$group_obj = groups_get_group( $group_id );
+
+		if( is_object( $group_obj ) && !empty( $group_obj ) ) {
+			
+			if ( defined('WP_DEBUG') && WP_DEBUG ) {
+				error_log( 'BP Group Moderation: Catch new group - ID: ' . $group_id );
+			}
+
+			// Set the is_new flag explicitly
+		    $group_obj->is_new = true;
+			
+			// Apply immediately and schedule a check
+			$this->process_new_group($group_obj);
+			
+			
 		}
-		
-		// Check if this is a new group based on multiple criteria
-		$is_new_group = false;
-		
-		// Check multiple ways to determine if this is a new group
-		if ( !empty( $group->is_new ) || 
-			 (isset($group->date_created) && strtotime($group->date_created) > (time() - 300)) ||
-			 get_transient( 'bp_new_group_' . $group->id ) ) {
-			$is_new_group = true;
-		}
-		
-		// Only process new groups
-		if ( !$is_new_group ) {
-			// Could be an existing pending group that needs status verified
-			$this->check_pending_status($group);
-			return;
-		}
-		
-		$this->process_new_group($group);
+
 	}
 	
 	/**
@@ -243,6 +192,7 @@ class BP_Group_Moderation {
 		// Store the original requested status
 		$original_status = $group->status;
 		groups_update_groupmeta( $group->id, 'requested_status', $original_status );
+		
 		if ( defined('WP_DEBUG') && WP_DEBUG ) {
 			error_log( 'BP Group Moderation: Stored original status: ' . $original_status );
 		}
