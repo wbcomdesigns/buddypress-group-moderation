@@ -29,8 +29,19 @@ class BP_Group_Moderation {
 		// Load text domain.
 		add_action( 'bp_init', array( $this, 'bp_group_moderation_load_plugin_textdomain' ) );
 		add_action( 'bp_loaded', array( $this, 'bp_group_moderation_init' ) );
+		add_action( 'init', array( $this, 'remove_action_notification' ) );
+	
 	}
 
+	/** 
+	 * Remove action to remove notification delete functionality on group delete.
+	 * @since 1.0.0
+	 */
+
+	public function remove_action_notification(){
+		
+		remove_action( 'groups_delete_group', 'bp_groups_delete_group_delete_all_notifications');
+	}
 	/**
 	 * Return an instance of this class.
 	 *

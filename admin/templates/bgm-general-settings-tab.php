@@ -13,8 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Process settings save.
-if ( isset( $_POST['bp_group_moderation_save_settings'] ) && wp_verify_nonce( $_POST[ 'bp_group_moderation_settings_nonce' ], 'bp_group_moderation_settings_nonce_action' ) ) {
-   	
+if ( isset( $_POST['bp_group_moderation_save_settings'] ) && isset( $_POST[ 'bp_group_moderation_settings_nonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'bp_group_moderation_settings_nonce' ] ) ), 'bp_group_moderation_settings_nonce_action' ) ) {
+	   	
 	$auto_approve_admin = isset( $_POST['bp_group_moderation_auto_approve_admin'] ) ? 1 : 0;
 	$hide_pending = isset( $_POST['bp_group_moderation_hide_pending'] ) ? 1 : 0;
 	$send_emails = isset( $_POST['bp_group_moderation_send_emails'] ) ? 1 : 0;

@@ -247,25 +247,30 @@ class BP_Group_Moderation_Admin {
 		global $wpdb ;
 		// Get the originally requested status.
 		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
-		
+
+		$result  = false;
+
 		// Get the group object.
 		$group = groups_get_group( $group_id );
 		
 		if ( ! $group ) {
 			return false;
 		}
-	
-		// Update the group to the requested status.		
-		$table_name = $wpdb->prefix . 'bp_groups';
-		$result     = $wpdb->update(
-			$table_name,
-			array( 'status' => $requested_status ),
-			array( 'id' => $group_id ),
-			array( '%s' ),
-			array( '%d' )
-		);
 		
-		if ( $result ) {
+		if( 'hidden' !== $requested_status ) {
+			
+			// Update the group to the requested status.		
+			$table_name = $wpdb->prefix . 'bp_groups';
+			$result     = $wpdb->update(
+				$table_name,
+				array( 'status' => $requested_status ),
+				array( 'id' => $group_id ),
+				array( '%s' ),
+				array( '%d' )
+			);
+		}
+
+		if ( $result || ( 'hidden' === $requested_status )  ) {
 			// Remove the pending flag.
 			groups_delete_groupmeta( $group_id, 'approval_status' );
 			
@@ -361,26 +366,30 @@ If you have questions about this decision, please contact the site administrator
 	 */
 	public function admin_page_content() {
 		
-		if( isset( $_GET['id'] ) && isset( $_GET['_wp_nonce'] ) ) {
+		if( ( isset( $_GET[ 'action' ] ) || isset( $_GET[ 'id' ] ) )  && isset( $_GET['_wp_nonce'] ) ) {
 
-			if( empty( $_GET['id'] ) || empty( $_GET['_wp_nonce'] ) ) {
-				return;
-			}
-			$nonce_value     = sanitize_text_field( wp_unslash( $_GET['_wp_nonce'] ) ); 
-			$notification_id = sanitize_text_field( wp_unslash( $_GET['id'] ) ); 
+			$nonce_value     = !empty( $_GET['_wp_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wp_nonce'] ) ) : ''; 
+			$notification_id = !empty( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0; 
 
-			$notification_id = intval( $notification_id ?? 0 );
+			$notification_component = !empty( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : ''; 
 
 			if(  ! wp_verify_nonce( $nonce_value, 'bp_group_moderation_notification_nonce'  ) ) { 
 				return;
 			}
-				
+			
 			if ( class_exists('BP_Notifications_Notification') ) {
-				BP_Notifications_Notification::update(
-					array( 'is_new' => 0 ),
-					array( 'id'     => $notification_id )
-				);
 
+				if( empty( $notification_id ) && !empty( $notification_component )) {
+							
+					bp_notifications_mark_notifications_by_type( bp_loggedin_user_id(), 'groups' , $notification_component );
+				
+				} elseif( !empty( $notification_id ) ) {
+									
+					BP_Notifications_Notification::update(
+						array( 'is_new' => 0 ),
+						array( 'id'     => $notification_id )
+					);
+				}	
 			}
 		}
 
