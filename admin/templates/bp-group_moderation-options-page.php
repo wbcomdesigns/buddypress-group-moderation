@@ -22,6 +22,9 @@ switch ( $bgm_tab ) {
 	case 'welcome':
 		include 'bgm-welcome-page.php';
 		break;
+	case 'general':
+		include 'bgm-general-settings-tab.php';
+		break;
 	case 'support':
 		include 'bgm-support-tab.php';
 		break;

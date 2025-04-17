@@ -67,3 +67,9 @@
 .nav-tab-wrapper ul li#support a.nav-tab::before {
     content: "\f101";
 }
+
+.nav-tab-wrapper ul li#general a.nav-tab::before {
+    content: "\f111" !important;
+}
+
+

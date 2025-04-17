@@ -64,7 +64,7 @@ class BP_Group_Moderation_Admin {
 
 			add_submenu_page( 'wbcomplugins', esc_html__( 'General', 'bp-group-moderation' ), esc_html__( 'General', 'bp-group-moderation' ), 'manage_options', 'wbcomplugins' );
 		}
-		add_submenu_page( 'wbcomplugins', esc_html__( 'BuddyPress Group Moderation Settings Page', 'bp-group-moderation' ), esc_html__( 'Bp Group Moderation', 'bp-group-moderation' ), 'manage_options', 'bp-group-moderation', array( $this, 'bp_group_moderation_settings_page' ) );
+		add_submenu_page( 'wbcomplugins', esc_html__( 'BuddyPress Group Moderation Settings Page', 'bp-group-moderation' ), esc_html__( 'Group Moderation', 'bp-group-moderation' ), 'manage_options', 'bp-group-moderation', array( $this, 'bp_group_moderation_settings_page' ) );
 	}
 
 	/**
@@ -78,6 +78,7 @@ class BP_Group_Moderation_Admin {
 			'bp_group_moderation_admin_setting_tabs',
 			array(
 				'welcome'                => __( 'Welcome', 'bp-group-moderation' ),
+				'general'                => __( 'General', 'bp-group-moderation' ),
 				'support'                => __( 'Support', 'bp-group-moderation' ),
 			)
 		);
@@ -388,13 +389,7 @@ If you have questions about this decision, please contact the site administrator
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Pending Groups', 'bp-group-moderation' ); ?></h1>
-			
-			<div class="bp-group-moderation-settings">				
-				<a href="<?php echo esc_url( admin_url( 'admin.php?page=bp-pending-groups&view=settings&_wpnonce=' . wp_create_nonce( 'bp_pending_groups_settings' ) ) ); ?>" class="button">
-					<?php esc_html_e( 'Settings', 'bp-group-moderation' ); ?>
-				</a>
-			</div>
-			
+		
 			<?php 
 			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) :
 				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
@@ -402,7 +397,6 @@ If you have questions about this decision, please contact the site administrator
 					wp_die( esc_html__( 'Security check failed.', 'bp-group-moderation' ) );
 				}
 			?>
-			<?php $this->render_settings_page(); ?>
 			<?php else : ?>
 				<?php if ( ! empty( $pending_groups ) ) : ?>
 					<div id="bp-group-moderation-messages"></div>
@@ -457,89 +451,6 @@ If you have questions about this decision, please contact the site administrator
 				<?php endif; ?>
 			<?php endif; ?>
 		</div>
-		<?php
-	}
-
-	/**
-	 * Render the settings page.
-	 */
-	public function render_settings_page() {
-		// Process settings save.
-		if ( isset( $_POST['bp_group_moderation_save_settings'] ) && check_admin_referer( 'bp_group_moderation_settings' ) ) {
-			$auto_approve_admin = isset( $_POST['bp_group_moderation_auto_approve_admin'] ) ? 1 : 0;
-			$hide_pending = isset( $_POST['bp_group_moderation_hide_pending'] ) ? 1 : 0;
-			$send_emails = isset( $_POST['bp_group_moderation_send_emails'] ) ? 1 : 0;
-			
-			update_option( 'bp_group_moderation_auto_approve_admin', $auto_approve_admin );
-			update_option( 'bp_group_moderation_hide_pending', $hide_pending );
-			update_option( 'bp_group_moderation_send_emails', $send_emails );
-			
-			?>
-			<div class="notice notice-success is-dismissible">
-				<p><?php esc_html_e( 'Settings saved successfully.', 'bp-group-moderation' ); ?></p>
-			</div>
-			<?php
-		}
-		
-		// Get current settings.
-		$auto_approve_admin = get_option( 'bp_group_moderation_auto_approve_admin', true );
-		$hide_pending = get_option( 'bp_group_moderation_hide_pending', true );
-		$send_emails = get_option( 'bp_group_moderation_send_emails', true );
-		
-		?>
-		<div class="bp-group-moderation-settings-form">
-			<h2><?php esc_html_e( 'Group Moderation Settings', 'bp-group-moderation' ); ?></h2>
-			
-			<form method="post" action="">
-				<?php wp_nonce_field( 'bp_group_moderation_settings' ); ?>
-				
-				<table class="form-table">
-					<tr>
-						<th scope="row">
-							<label for="bp_group_moderation_auto_approve_admin">
-								<?php esc_html_e( 'Auto-approve admin groups', 'bp-group-moderation' ); ?>
-							</label>
-						</th>
-						<td>
-							<input type="checkbox" id="bp_group_moderation_auto_approve_admin" name="bp_group_moderation_auto_approve_admin" value="1" <?php checked( $auto_approve_admin ); ?> />
-							<p class="description"><?php esc_html_e( 'Automatically approve groups created by site administrators.', 'bp-group-moderation' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="bp_group_moderation_hide_pending">
-								<?php esc_html_e( 'Hide pending groups', 'bp-group-moderation' ); ?>
-							</label>
-						</th>
-						<td>
-							<input type="checkbox" id="bp_group_moderation_hide_pending" name="bp_group_moderation_hide_pending" value="1" <?php checked( $hide_pending ); ?> />
-							<p class="description"><?php esc_html_e( 'Set pending groups to hidden status until approved.', 'bp-group-moderation' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row">
-							<label for="bp_group_moderation_send_emails">
-								<?php esc_html_e( 'Send email notifications', 'bp-group-moderation' ); ?>
-							</label>
-						</th>
-						<td>
-							<input type="checkbox" id="bp_group_moderation_send_emails" name="bp_group_moderation_send_emails" value="1" <?php checked( $send_emails ); ?> />
-							<p class="description"><?php esc_html_e( 'Send email notifications in addition to BuddyPress notifications.', 'bp-group-moderation' ); ?></p>
-						</td>
-					</tr>
-				</table>
-				
-				<p class="submit">
-					<input type="submit" name="bp_group_moderation_save_settings" class="button button-primary" value="<?php esc_attr_e( 'Save Settings', 'bp-group-moderation' ); ?>" />
-				</p>
-			</form>
-		</div>
-		
-		<p>
-			<a href="<?php echo esc_url( admin_url( 'admin.php?page=bp-pending-groups' ) ); ?>" class="button">
-				<?php esc_html_e( '&laquo; Back to Pending Groups', 'bp-group-moderation' ); ?>
-			</a>
-		</p>
 		<?php
 	}
 
