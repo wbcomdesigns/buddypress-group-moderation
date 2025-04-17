@@ -2,7 +2,7 @@
 /**
  * Plugin Name: BuddyPress Group Moderation
  * Plugin URI: https://wbcomdesigns.com/plugins/buddypress-group-moderation
- * Description: Adds a moderation system to BuddyPress groups. New groups require admin approval before becoming active.
+ * Description: Introduces a moderation system for BuddyPress groups, requiring admin approval for new groups before they become active.
  * Version: 1.0.0
  * Author: Wbcom Designs
  * Author URI: https://wbcomdesigns.com
@@ -57,12 +57,12 @@ register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
  * Deactivation hook for the plugin.
  */
 function bp_group_moderation_deactivate() {
-	// Nothing to do here yet.
+	//No actions defined yet.
 }
 register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
 
 /**
- *  Check if buddypress and group component is activate.
+ *  Check if BuddyPress and the group component are activated.
  */
 function bp_group_moderation_requires_buddypress() {
 
@@ -75,7 +75,7 @@ function bp_group_moderation_requires_buddypress() {
 add_action( 'admin_init', 'bp_group_moderation_requires_buddypress' );
 
 /**
- * Admin notice to indicate BuddyPress and group component is required.
+ * Displays an admin notice indicating that BuddyPress and the group component are required.
  */
 function bp_group_moderation_required_plugin_admin_notice() {
 	$plugin_name = esc_html__( 'BuddyPress Group Moderation', 'bp-group-moderation' );
@@ -99,7 +99,7 @@ function bp_group_moderation_required_plugin_admin_notice() {
 }
 
 /**
- * Redirect to plugin settings page after activation.
+ * Redirects to the plugin settings page after activation.
  *
  * @param string $plugin The plugin slug.
  */

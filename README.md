@@ -8,7 +8,7 @@
 
 ## Description
 
-BuddyPress Group Moderation adds a moderation system to BuddyPress groups. New groups require admin approval before becoming active.
+BuddyPress Group Moderation introduces a moderation system for BuddyPress groups, requiring admin approval for new groups before they become active.
 
 ## Features
 

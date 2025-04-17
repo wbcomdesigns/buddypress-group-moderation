@@ -23,6 +23,19 @@ class BP_Group_Moderation_Admin {
 	protected static $instance = null;
 
 	/**
+	 * Get the singleton instance of this class.
+	 *
+	 * @return object A single instance of this class.
+	 */
+	public static function get_instance() {
+		// If the single instance hasn't been set, set it now.
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
 	 * Initialize the class.
 	 */
 	private function __construct() {		
@@ -138,19 +151,6 @@ class BP_Group_Moderation_Admin {
 	}
 
 	/**
-	 * Return an instance of this class.
-	 *
-	 * @return object A single instance of this class.
-	 */
-	public static function get_instance() {
-		// If the single instance hasn't been set, set it now.
-		if ( null === self::$instance ) {
-			self::$instance = new self();
-		}
-		return self::$instance;
-	}
-
-	/**
 	 * Add admin menu for managing pending groups.
 	 */
 	public function bp_group_moderation_add_admin_menu() {
@@ -171,13 +171,13 @@ class BP_Group_Moderation_Admin {
 	 */
 	public function bp_group_moderation_admin_enqueue_scripts( $hook ) {		
 		if ( strpos( $hook, 'bp-pending-groups' ) === false && strpos( $hook, 'bp-group-moderation' ) === false ) {
-				return;
+			return;
 		}
 
-		wp_enqueue_style( 'bp-group-moderation-admin', BP_GROUP_MODERATION_PLUGIN_URL . 'assets/css/admin.css', array(), BP_GROUP_MODERATION_VERSION );
+		wp_enqueue_style( 'bp-group-moderation-admin', BP_GROUP_MODERATION_PLUGIN_URL . 'assets/css/bp-group-moderation-admin.css', array(), BP_GROUP_MODERATION_VERSION );
 		wp_enqueue_script(
 			'bp-group-moderation-admin',
-			BP_GROUP_MODERATION_PLUGIN_URL . 'assets/js/admin.js',
+			BP_GROUP_MODERATION_PLUGIN_URL . 'assets/js/bp-group-moderation-admin.js',
 			array( 'jquery' ),
 			BP_GROUP_MODERATION_VERSION,
 			true

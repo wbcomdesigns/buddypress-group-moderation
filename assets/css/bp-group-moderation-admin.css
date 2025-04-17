@@ -7,11 +7,6 @@
     margin-bottom: 15px;
 }
 
-/* Settings link */
-.bp-group-moderation-settings {
-    margin-bottom: 20px;
-}
-
 /* Table styles */
 .bp-group-moderation-table {
     margin-top: 15px;
@@ -36,22 +31,6 @@
     padding: 20px;
     margin-top: 15px;
     text-align: center;
-}
-
-/* Settings form */
-.bp-group-moderation-settings-form {
-    background: #fff;
-    border: 1px solid #ccd0d4;
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
-    padding: 20px;
-    margin-top: 15px;
-    margin-bottom: 20px;
-}
-
-.bp-group-moderation-settings-form h2 {
-    margin-top: 0;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #eee;
 }
 
 /* Messages container */

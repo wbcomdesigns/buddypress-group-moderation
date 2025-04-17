@@ -23,16 +23,7 @@ class BP_Group_Moderation_Notifications {
 	protected static $instance = null;
 
 	/**
-	 * Initialize the class.
-	 */
-	private function __construct() {
-
-		add_action( 'bp_init',  array( $this, 'bp_group_moderation_check_notifications_component' ) );
-		
-	}
-
-	/**
-	 * Return an instance of this class.
+	 * Get the singleton instance of this class.
 	 *
 	 * @return object A single instance of this class.
 	 */
@@ -44,6 +35,14 @@ class BP_Group_Moderation_Notifications {
 		return self::$instance;
 	}
 
+	/**
+	 * Initialize the class.
+	 */
+	private function __construct() {
+
+		add_action( 'bp_init',  array( $this, 'bp_group_moderation_check_notifications_component' ) );
+		
+	}
 
 	public function bp_group_moderation_check_notifications_component() {
 		if ( ! function_exists( 'bp_is_active' ) || ! bp_is_active( 'notifications' ) ) {
@@ -64,13 +63,13 @@ class BP_Group_Moderation_Notifications {
 	 * @return array
 	 */
 	public function bp_group_moderation_register_notifications_component( $component_names = array() ) {
-		// Force $component_names to be an array
+		// Ensure $component_names is an array
 		if ( ! is_array( $component_names ) ) {
 			$component_names = array();
 		}
 		
 		// Add our component to the registered components.
-		// Using 'groups' instead of a custom component for better compatibility.
+		// Use 'groups' component for broader compatibility.
 		if ( ! in_array( 'groups', $component_names ) ) {
 			$component_names[] = 'groups';
 		}
@@ -79,7 +78,7 @@ class BP_Group_Moderation_Notifications {
 	}
 
 		/**
-	 * Formats the BuddyPress group moderation notification for pending groups.
+	 * Formats notifications for pending group approvals.
 	 *
 	 * This callback formats the notification text and link shown to admins when
 	 * one or more new BuddyPress groups are pending approval. The output is used 
@@ -192,7 +191,7 @@ class BP_Group_Moderation_Notifications {
 	 * Formats the BuddyPress group moderation notification for rejected groups.
 	 *
 	 * This callback formats the notification text and link shown to admins when
-	 * one or more new BuddyPress groups are rejected approval. The output is used 
+	 * one or more new BuddyPress groups are not approved. The output is used 
 	 * by the 'bp_groups_group_rejected_notification' filter.
 	 *
 	 * @param string $action            Default notification text.
@@ -243,7 +242,7 @@ class BP_Group_Moderation_Notifications {
 
 
 	/**
-	 * Functionality to mark read notifications.
+	 * Marks notifications as read.
 	 * @since 1.0.0
 	 */
 	public function bp_group_moderation_mark_read_single_notification(){

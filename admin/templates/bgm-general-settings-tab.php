@@ -2,7 +2,7 @@
 
 
 /**
- * This file is used for rendering and saving plugin general settings.
+ * Handles rendering and saving of the plugin's general settings.
  *
  * @package bp_group_moderation
  */
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	// Exit if accessed directly.
 }
 
-// Process settings save.
+// Handle saving of settings.
 if ( isset( $_POST['bp_group_moderation_save_settings'] ) && isset( $_POST[ 'bp_group_moderation_settings_nonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'bp_group_moderation_settings_nonce' ] ) ), 'bp_group_moderation_settings_nonce_action' ) ) {
 	   	
 	$auto_approve_admin = isset( $_POST['bp_group_moderation_auto_approve_admin'] ) ? 1 : 0;

@@ -23,7 +23,20 @@ class BP_Group_Moderation {
 	protected static $instance = null;
 
 	/**
-	 * Initialize the plugin.
+	 * Get the singleton instance of this class.
+	 *
+	 * @return object A single instance of this class.
+	 */
+	public static function get_instance() {
+		// If the single instance hasn't been set, set it now.
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Initialize the class.
 	 */
 	private function __construct() {
 		// Load text domain.
@@ -41,18 +54,6 @@ class BP_Group_Moderation {
 	public function remove_action_notification(){
 		
 		remove_action( 'groups_delete_group', 'bp_groups_delete_group_delete_all_notifications');
-	}
-	/**
-	 * Return an instance of this class.
-	 *
-	 * @return object A single instance of this class.
-	 */
-	public static function get_instance() {
-		// If the single instance hasn't been set, set it now.
-		if ( null === self::$instance ) {
-			self::$instance = new self();
-		}
-		return self::$instance;
 	}
 
 	/**
@@ -612,107 +613,4 @@ View the group: %4$s', 'bp-group-moderation' ),
 		exit;
 	}
 
-	/**
-	 * Approve a pending group.
-	 *
-	 * @param int $group_id The group ID.
-	 * @return bool Success status.
-	 */
-	public function approve_group( $group_id ) {
-		// Get the originally requested status
-		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
-		
-		// Get the group object
-		$group = groups_get_group( $group_id );
-		
-		// Update the group to the requested status
-		$group->status = $requested_status;
-		$result = $group->save();
-		
-		if ( $result ) {
-			// Remove the pending flag
-			groups_delete_groupmeta( $group_id, 'approval_status' );
-			
-			// Notify the group creator
-			$this->notify_user_of_group_decision( $group, 'approved' );
-			
-			return true;
-		}
-		
-		return false;
-	}
-
-	/**
-	 * Reject a pending group.
-	 *
-	 * @param int $group_id The group ID.
-	 * @return bool Success status.
-	 */
-	public function reject_group( $group_id ) {
-		// Get group info before deletion
-		$group = groups_get_group( $group_id );
-		
-		// Notify the creator before deleting the group
-		$this->notify_user_of_group_decision( $group, 'rejected' );
-		
-		// Delete the group
-		$result = groups_delete_group( $group_id );
-		
-		return $result;
-	}
-
-	/**
-	 * Notify a user about their group's approval status.
-	 *
-	 * @param BP_Groups_Group $group The group object.
-	 * @param string          $decision 'approved' or 'rejected'.
-	 */
-	public function notify_user_of_group_decision( $group, $decision ) {
-		if ( ! in_array( $decision, array( 'approved', 'rejected' ) ) ) {
-			return;
-		}
-		
-		$creator_id = $group->creator_id;
-		$group_name = $group->name;
-		$group_id = $group->id;
-		
-		// Add BuddyPress notification.
-		if ( bp_is_active( 'notifications' ) ) {
-			bp_notifications_add_notification( array(
-				'user_id'           => $creator_id,
-				'item_id'           => $group_id,
-				'component_name'    => 'groups',
-				'component_action'  => 'group_' . $decision,
-				'date_notified'     => bp_core_current_time(),
-				'is_new'            => 1,
-			) );
-		}
-		
-		// Send email notification if enabled.
-		$send_email = get_option( 'bp_group_moderation_send_emails', true );
-		if ( $send_email ) {
-			$creator = get_userdata( $creator_id );
-			
-			if ( 'approved' === $decision ) {
-				$subject = sprintf( __( 'Your group "%s" has been approved', 'bp-group-moderation' ), $group_name );
-				$message = sprintf(
-					__( 'Good news! Your group "%1$s" has been approved by a site administrator and is now live with your requested visibility setting.
-
-Visit your group: %2$s', 'bp-group-moderation' ),
-					$group_name,
-					self::bp_group_moderation_get_group_url( $group )
-				);
-			} else {
-				$subject = sprintf( __( 'Your group "%s" was not approved', 'bp-group-moderation' ), $group_name );
-				$message = sprintf(
-					__( 'We\'re sorry, but your group "%s" has not been approved by the site administrators.
-
-If you have questions about this decision, please contact the site administrators.', 'bp-group-moderation' ),
-					$group_name
-				);
-			}
-			
-			wp_mail( $creator->user_email, $subject, $message );
-		}
-	}
 }

@@ -17,13 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 <div class="wbcom-tab-content">
 	<div class="wbcom-welcome-main-wrapper">
 		<div class="wbcom-welcome-head">
-			<p class="wbcom-welcome-description"><?php esc_html_e( 'BuddyPress Group Moderation adds a moderation system to BuddyPress groups. New groups require admin approval before becoming active.', 'bp-group-moderation' ); ?></p>
+			<p class="wbcom-welcome-description"><?php esc_html_e( 'BuddyPress Group Moderation introduces a moderation system for BuddyPress groups, requiring admin approval for new groups before they become active.', 'bp-group-moderation' ); ?></p>
 		</div><!-- .wbcom-welcome-head -->
 
 		<div class="wbcom-welcome-content">
 			<div class="wbcom-welcome-support-info">
 				<h3><?php esc_html_e( 'Help &amp; Support Resources', 'bp-group-moderation' ); ?></h3>
-				<p><?php esc_html_e( 'Here are all the resources you may need to get help from us. Documentation is usually the best place to start. If you require help anytime, our customer care team is available to assist you at the support center.', 'bp-group-moderation' ); ?></p>
+				<p><?php esc_html_e( 'Here are all the resources you may need to get help from us. Documentation is usually the best place to start. Should you require help anytime, our customer care team is available to assist you at the support center', 'bp-group-moderation' ); ?></p>
 
 				<div class="wbcom-support-info-wrap">
 					<div class="wbcom-support-info-widgets">

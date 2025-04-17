@@ -1,6 +1,6 @@
 <?php
 	/**
-	 * This template file is used for fetching desired options page file at admin settings end.
+	 * This template file is used to fetch the appropriate options page file for the admin settings section.
 	 *
 	 * @link       https://wbcomdesigns.com/
 	 *
