@@ -494,8 +494,10 @@ View the group: %4$s', 'bp-group-moderation' ),
 			
 			// Show to group admins and site admins.
 			if ( groups_is_user_admin( bp_loggedin_user_id(), $group_id ) || current_user_can( 'manage_options' ) ) {
+				// Add id when Youzify is active.
+				$id_attr = class_exists( 'Youzify' ) ? 'message' : '';
 				?>
-				<div class="bp-feedback warning">
+				<div <?php if ( $id_attr ) echo 'id="' . esc_attr( $id_attr ) . '"'; ?> class="bp-feedback warning info">
 					<span class="bp-icon" aria-hidden="true"></span>
 					<p><?php esc_html_e( 'This group is pending approval by a site administrator. Some features may be limited until approval.', 'bp-group-moderation' ); ?></p>
 				</div>
