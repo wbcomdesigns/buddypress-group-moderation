@@ -94,8 +94,12 @@ class BP_Group_Moderation {
 		add_filter( 'bp_activity_get', array( $this, 'bp_group_moderation_filter_pending_groups_activity' ), 10, 1 );
 		
 		// Display hooks.
-		add_action( 'bp_before_group_header', array( $this, 'bp_group_moderation_display_pending_notice' ) );
-
+		if( class_exists( 'Youzify' ) ) {
+			add_action( 'bp_before_group_body', array( $this, 'bp_group_moderation_display_pending_notice' ) );
+		} else {
+			add_action( 'bp_before_group_header', array( $this, 'bp_group_moderation_display_pending_notice' ) );
+		}
+		
 		// Schedule regular checks for pending groups that should be hidden
 		add_action( 'bp_group_moderation_hourly_check', array( $this, 'bp_group_moderation_check_pending_groups_status' ) );
 		if ( ! wp_next_scheduled( 'bp_group_moderation_hourly_check' ) ) {
@@ -107,7 +111,12 @@ class BP_Group_Moderation {
 		
 		// Debug hook for admin users - add a button to test the function
 		if ( current_user_can('manage_options') && bp_is_group() ) {
-			add_action( 'bp_before_group_header', array( $this, 'bp_group_moderation_add_admin_test_buttons' ) );
+			if( class_exists( 'Youzify' ) ) {
+				add_action( 'bp_before_group_body', array( $this, 'bp_group_moderation_add_admin_test_buttons' ) );
+			} else {
+				add_action( 'bp_before_group_header', array( $this, 'bp_group_moderation_add_admin_test_buttons' ) );
+			}
+			
 		}
 		
 		// Handle admin actions
