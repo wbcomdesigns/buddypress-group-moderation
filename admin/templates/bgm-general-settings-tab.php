@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	// Exit if accessed directly.
 }
 
+$bpgrp_settings_notice = "display:none";
 // Handle saving of settings.
 if ( isset( $_POST['bp_group_moderation_save_settings'] ) && isset( $_POST[ 'bp_group_moderation_settings_nonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'bp_group_moderation_settings_nonce' ] ) ), 'bp_group_moderation_settings_nonce_action' ) ) {
 	   	
@@ -22,6 +23,8 @@ if ( isset( $_POST['bp_group_moderation_save_settings'] ) && isset( $_POST[ 'bp_
 	update_option( 'bp_group_moderation_auto_approve_admin', $auto_approve_admin );
 	update_option( 'bp_group_moderation_hide_pending', $hide_pending );
 	update_option( 'bp_group_moderation_send_emails', $send_emails );
+
+	$bpgrp_settings_notice = "";
 
 }
 		
@@ -36,6 +39,10 @@ $send_emails        = get_option( 'bp_group_moderation_send_emails', true );
 	<div class="wbcom-admin-title-section">
 		<h3 class="wbcom-welcome-title"><?php esc_html_e( 'BuddyPress Group Moderation', 'bp-group-moderation' ); ?></h3>			
 	</div><!-- .wbcom-welcome-head -->
+	<div class="notice notice-success is-dismissible" style=<?php echo esc_attr( $bpgrp_settings_notice ); ?>> 
+		<p><strong><?php esc_html_e(' Settings saved successfully.', 'bp-group-moderation' );?></strong></p>
+		<button type="button" class="notice-dismiss"></button>
+	</div>
 	<form method="post" action="" class="">
         <?php wp_nonce_field( 'bp_group_moderation_settings_nonce_action', 'bp_group_moderation_settings_nonce' ); ?>
 		<div class="wbcom-admin-option-wrap wbcom-admin-option-wrap-view">		
