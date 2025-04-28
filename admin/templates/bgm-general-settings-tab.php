@@ -39,7 +39,7 @@ $send_emails        = get_option( 'bp_group_moderation_send_emails', true );
 	<div class="wbcom-admin-title-section">
 		<h3 class="wbcom-welcome-title"><?php esc_html_e( 'BuddyPress Group Moderation', 'bp-group-moderation' ); ?></h3>			
 	</div><!-- .wbcom-welcome-head -->
-	<div class="notice notice-success is-dismissible" style=<?php echo esc_attr( $bpgrp_settings_notice ); ?>> 
+	<div id="setting-error-bpgm_message" class="notice notice-success is-dismissible" style=<?php echo esc_attr( $bpgrp_settings_notice ); ?>> 
 		<p><strong><?php esc_html_e(' Settings saved successfully.', 'bp-group-moderation' );?></strong></p>
 		<button type="button" class="notice-dismiss"></button>
 	</div>

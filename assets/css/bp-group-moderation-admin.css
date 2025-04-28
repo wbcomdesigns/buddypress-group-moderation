@@ -50,3 +50,29 @@
 .nav-tab-wrapper ul li#general a.nav-tab::before {
     content: "\f111" !important;
 }
+
+#setting-error-bpgm_message {
+    position: absolute;
+    right: 50px;
+    z-index: 99;
+    margin-top: -40px;
+    border-radius: 10px;
+    line-height: normal;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #10AB00;
+}
+
+@media screen and (max-width: 1189px) {
+    #setting-error-bpgm_message {
+        margin: 0;
+        position: relative;
+        right: auto;
+        left: auto;
+    }
+}
+
+#setting-error-bpgm_message button.notice-dismiss:before {
+    color: red !important;
+}
