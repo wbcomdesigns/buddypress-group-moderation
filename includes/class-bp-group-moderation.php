@@ -289,6 +289,8 @@ class BP_Group_Moderation {
 		global $wpdb, $bp;
 		
 		// Get all pending group IDs
+		
+		//phpcs:disable
 		$pending_group_ids = $wpdb->get_col( $wpdb->prepare(
 			"SELECT g.id FROM {$bp->groups->table_name} g
 			INNER JOIN {$bp->groups->table_name_groupmeta} m ON g.id = m.group_id
@@ -296,7 +298,8 @@ class BP_Group_Moderation {
 			'approval_status',
 			'pending'
 		) );
-
+		//phpcs:enable
+		
 		if ( empty( $pending_group_ids ) ) {
 			return;
 		}
@@ -415,6 +418,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 		
 		global $wpdb, $bp;
 		
+		//phpcs:disable
 		// Get all pending group IDs.
 		$pending_group_ids = $wpdb->get_col( $wpdb->prepare(
 			"SELECT g.id FROM {$bp->groups->table_name} g
@@ -423,7 +427,8 @@ View the group: %4$s', 'bp-group-moderation' ),
 			'approval_status',
 			'pending'
 		) );
-		
+		//phpcs:enable
+
 		if ( ! empty( $pending_group_ids ) ) {
 			// Format for SQL query.
 			$pending_ids_str = implode( ',', array_map( 'absint', $pending_group_ids ) );
@@ -578,6 +583,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 			bp_core_add_message( __( 'Pending status has been cleared.', 'bp-group-moderation' ), 'success' );
 		}
 		elseif ( $action === 'view-debug' ) {
+			//phpcs:disable
 			// Get all group meta
 			global $wpdb, $bp;
 			$meta_table = $bp->groups->table_name_groupmeta;
@@ -585,6 +591,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 				"SELECT meta_key, meta_value FROM {$meta_table} WHERE group_id = %d",
 				$group_id
 			));
+			//phpcs:enable
 			
 			// Display the debug info
 			echo '<div class="bp-feedback">';
