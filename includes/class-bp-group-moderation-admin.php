@@ -437,7 +437,7 @@ class BP_Group_Moderation_Admin {
 
 								</td>
 								<td>
-									<a href="<?php echo esc_url( bp_core_get_user_domain( $group->creator_id ) ); ?>" target="_blank">
+									<a href="<?php echo esc_url( bp_members_get_user_url( $group->creator_id ) ); ?>" target="_blank">
 										<?php echo esc_html( $creator->display_name ); ?>
 									</a>
 								</td>
