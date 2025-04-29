@@ -72,26 +72,16 @@ add_action( 'plugins_loaded', 'bp_group_moderation_init' );
 function bp_group_moderation_activate() {
 	
 	if( class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) ) {
+		
+		global $wpdb;
 
-		$modified_unread_notifications = BP_Notifications_Notification::get( 
-			array(
-				'user_id'          => bp_loggedin_user_id(),
-				'component_name'   => 'bp_mod_groups',
-				'is_new'           => 1
-			)
-		);
+		$modified_unread_notifications = $wpdb->get_results($wpdb->prepare( "SELECT * FROM {$wpdb->prefix}bp_notifications WHERE `user_id`=%d AND `component_name`=%s", bp_loggedin_user_id(), 'bp_mod_groups' ));
+
 		if( is_array( $modified_unread_notifications ) && !empty( $modified_unread_notifications ) ) {
 			$actions = array( 'new_group_pending', 'group_approved', 'group_rejected' );
 			foreach( $actions as $action ) { 
-				$modified_notification_component = BP_Notifications_Notification::update(
-					array(
-						'component_name'  => 'groups'
-					),
-					array(
-						'component_name'   => 'bp_mod_groups',
-						'component_action' => $action
-					)
-				);
+				
+				$modified_notification_component = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}bp_notifications SET component_name = %s WHERE component_action=%s AND component_name=%s", 'groups', $action, 'bp_mod_groups' ) );
 			}
 			
 		}
