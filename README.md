@@ -12,7 +12,7 @@ BuddyPress Group Moderation introduces a moderation system for BuddyPress groups
 
 ## Features
 
-- All newly created groups are automatically set to "pending" status
+- All newly created groups are automatically set to "hidden" status
 - Admins receive notifications when new groups are created
 - Admins can approve or reject pending groups from a dedicated admin page
 - Group creators are notified when their group is approved or rejected
@@ -34,10 +34,10 @@ BuddyPress Group Moderation introduces a moderation system for BuddyPress groups
 
 ## Configuration
 
-You can configure the plugin by navigating to "BuddyPress → Pending Groups" and clicking on the "Settings" button. Available settings include:
+You can configure the plugin by navigating to Admin Menu "WB Plugins → Group Moderation". Available settings include:
 
-- **Auto-approve admin groups**: When enabled, groups created by site administrators are automatically approved
-- **Send email notifications**: When enabled, email notifications are sent in addition to BuddyPress on-site notifications
+- **Auto-approve admin groups**: When enabled, groups created by site administrators are automatically approved.
+- **Send email notifications**: When enabled, email notifications are sent in addition to BuddyPress on-site notifications.
 
 ## Usage
 
@@ -50,10 +50,10 @@ You can configure the plugin by navigating to "BuddyPress → Pending Groups" an
 
 ### For Group Creators
 
-1. When you create a new group, it will be set to pending status
-2. You'll see a notice on your group page indicating that the group is pending approval
-3. When your group is approved or rejected, you'll receive a notification and (optionally) an email
-4. If approved, your group will be set to the visibility type you originally requested
+1. When you create a new group, it will be set to pending status.
+2. You'll see a notice on your group page indicating that the group is pending approval.
+3. When your group is approved or rejected, you'll receive a notification and (optionally) an email.
+4. If approved, your group will be set to the visibility type you originally requested.
 
 ## Frequently Asked Questions
 

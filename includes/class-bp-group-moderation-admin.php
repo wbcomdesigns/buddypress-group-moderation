@@ -335,7 +335,7 @@ class BP_Group_Moderation_Admin {
 		}
 		
 		// Send email notification if enabled.
-		$send_email = get_option( 'bp_group_moderation_send_emails', true );
+		$send_email = bp_group_moderation_fetch_settings( 'bp_group_moderation_send_emails' );
 		if ( $send_email ) {
 			$creator = get_userdata( $creator_id );
 			
@@ -344,7 +344,7 @@ class BP_Group_Moderation_Admin {
 				$message = sprintf(
 					__( 'Good news! Your group "%1$s" has been approved by a site administrator and is now live with your requested visibility setting.
 
-Visit your group: %2$s', 'bp-group-moderation' ),
+					Visit your group: %2$s', 'bp-group-moderation' ),
 					$group_name,
 					self::bp_group_moderation_get_group_url( $group )
 				);
@@ -353,13 +353,13 @@ Visit your group: %2$s', 'bp-group-moderation' ),
 				$message = sprintf(
 					__( 'We\'re sorry, but your group "%s" has not been approved by the site administrators.
 
-If you have questions about this decision, please contact the site administrators.', 'bp-group-moderation' ),
+					If you have questions about this decision, please contact the site administrators.', 'bp-group-moderation' ),
 					$group_name
 				);
 			}
 			
 			if( !empty(  $group->name ) && !empty( $creator_id ) ) {
-				update_usermeta( $creator_id, 'bp_grp_moderation_rejected_group_'.$group_id, $group->name );
+				update_user_meta( $creator_id, 'bp_grp_moderation_rejected_group_'.$group_id, $group->name );
 			}
 			wp_mail( $creator->user_email, $subject, $message );
 		}
@@ -477,9 +477,9 @@ If you have questions about this decision, please contact the site administrator
 		
 		$groups_table = $bp->groups->table_name;
 		$meta_table = $bp->groups->table_name_groupmeta;
-		
+
 		$query = $wpdb->prepare(
-			"SELECT g.* FROM {$groups_table} g
+			"SELECT g.* FROM {$groups_table} g            
 			INNER JOIN {$meta_table} m ON g.id = m.group_id
 			WHERE m.meta_key = %s AND m.meta_value = %s
 			ORDER BY g.date_created DESC",
@@ -488,7 +488,7 @@ If you have questions about this decision, please contact the site administrator
 		);
 		
 		$results = $wpdb->get_results( $query );
-		
+
 		// Convert to BP group objects.
 		$groups = array();
 		foreach ( $results as $result ) {

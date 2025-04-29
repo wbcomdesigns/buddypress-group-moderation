@@ -15,21 +15,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 $bpgrp_settings_notice = "display:none";
 // Handle saving of settings.
 if ( isset( $_POST['bp_group_moderation_save_settings'] ) && isset( $_POST[ 'bp_group_moderation_settings_nonce' ] ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST[ 'bp_group_moderation_settings_nonce' ] ) ), 'bp_group_moderation_settings_nonce_action' ) ) {
-	   	
-	$auto_approve_admin = isset( $_POST['bp_group_moderation_auto_approve_admin'] ) ? 1 : 0;
-	$send_emails = isset( $_POST['bp_group_moderation_send_emails'] ) ? 1 : 0;
 	
-	update_option( 'bp_group_moderation_auto_approve_admin', $auto_approve_admin );
-	update_option( 'bp_group_moderation_send_emails', $send_emails );
-
 	$bpgrp_settings_notice = "";
 
+	$auto_approve_admin = isset( $_POST['bp_group_moderation_auto_approve_admin'] ) ? true : false;
+	$send_emails        = isset( $_POST['bp_group_moderation_send_emails'] ) ? true : false;
+	
+	$bp_group_moderation_settings_update = array(
+		'bp_group_moderation_auto_approve_admin' => $auto_approve_admin,
+		'bp_group_moderation_send_emails'        => $send_emails
+	);	
+
+	update_option( 'bp_group_moderation_general_settings', $bp_group_moderation_settings_update );
 }
 		
 // Get current settings.
-$auto_approve_admin = get_option( 'bp_group_moderation_auto_approve_admin', true );
-$send_emails        = get_option( 'bp_group_moderation_send_emails', true );
-		
+$auto_approve_admin = bp_group_moderation_fetch_settings( 'bp_group_moderation_auto_approve_admin' );
+$send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_send_emails' );
+
 ?>
 
 <div class="wbcom-tab-content">
@@ -40,7 +43,7 @@ $send_emails        = get_option( 'bp_group_moderation_send_emails', true );
 		<p><strong><?php esc_html_e(' Settings saved successfully.', 'bp-group-moderation' );?></strong></p>
 		<button type="button" class="notice-dismiss"></button>
 	</div>
-	<form method="post" action="" class="">
+	<form method="post" action="">
         <?php wp_nonce_field( 'bp_group_moderation_settings_nonce_action', 'bp_group_moderation_settings_nonce' ); ?>
 		<div class="wbcom-admin-option-wrap wbcom-admin-option-wrap-view">		
 			<div class="form-table">

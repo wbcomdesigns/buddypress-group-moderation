@@ -107,7 +107,7 @@ class BP_Group_Moderation_Notifications {
 		}
 
 		if( empty( $group->name ) ) { 
-			$member_group_name = get_usermeta( $secondary_item_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
+			$member_group_name = get_user_meta( $secondary_item_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
 		} else {
 			$member_group_name = $group->name;
 		}
@@ -218,7 +218,7 @@ class BP_Group_Moderation_Notifications {
 		}
 
 		$user_id = bp_loggedin_user_id();
-		$group_name = get_usermeta( $user_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
+		$group_name = get_user_meta( $user_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
 		
 		$notification_id =  0;
 

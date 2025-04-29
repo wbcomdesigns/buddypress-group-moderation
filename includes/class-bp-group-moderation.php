@@ -196,7 +196,7 @@ class BP_Group_Moderation {
 		}
 		
 		// Check if we should auto-approve admin-created groups
-		$auto_approve_admin = get_option( 'bp_group_moderation_auto_approve_admin', true );
+		$auto_approve_admin = bp_group_moderation_fetch_settings( 'bp_group_moderation_auto_approve_admin' );
 		if ( $auto_approve_admin ) {
 			// Get the creator of the group
 			$creator_id = $group->creator_id;
@@ -263,23 +263,6 @@ class BP_Group_Moderation {
 			);
 		}
 	}
-
-	/**
-	 * Check and fix pending group status if needed
-	 *
-	 * @param BP_Groups_Group $group The group object.
-	 */
-	private function check_pending_status( $group ) {
-		$approval_status = groups_get_groupmeta( $group->id, 'approval_status', true );
-		
-		if ( 'pending' === $approval_status && 'hidden' !== $group->status ) {
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Found pending group ' . $group->id . ' not hidden, fixing...' );
-			}
-			
-			$this->force_hidden_status( $group->id );
-		}
-	}
 	
 	/**
 	 * Verify and fix group status if needed (run after a short delay)
@@ -313,7 +296,7 @@ class BP_Group_Moderation {
 			'approval_status',
 			'pending'
 		) );
-		
+
 		if ( empty( $pending_group_ids ) ) {
 			return;
 		}
@@ -378,7 +361,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 			}
 			
 			// Send email notification if enabled.
-			$send_email = get_option( 'bp_group_moderation_send_emails', true );
+			$send_email = bp_group_moderation_fetch_settings( 'bp_group_moderation_send_emails' );
 			if ( $send_email ) {
 				$admin_user = get_userdata( $admin_id );
 				wp_mail( $admin_user->user_email, $subject, $message );

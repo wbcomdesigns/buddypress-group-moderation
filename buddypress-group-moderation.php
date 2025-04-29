@@ -35,6 +35,7 @@ if( ! defined( 'BP_GROUP_MODERATION_PLUGIN_URL' ) ) {
 
 
 // Include required files.
+include_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/bp-group-moderation-general-functions.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-admin.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-notifications.php';
@@ -69,9 +70,41 @@ add_action( 'plugins_loaded', 'bp_group_moderation_init' );
  * Activation hook for the plugin.
  */
 function bp_group_moderation_activate() {
-	// Set default options.
-	add_option( 'bp_group_moderation_auto_approve_admin', true );
-	add_option( 'bp_group_moderation_send_emails', true );
+	
+	if( class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) ) {
+
+		$modified_unread_notifications = BP_Notifications_Notification::get( 
+			array(
+				'user_id'          => bp_loggedin_user_id(),
+				'component_name'   => 'bp_mod_groups',
+				'is_new'           => 1
+			)
+		);
+		if( is_array( $modified_unread_notifications ) && !empty( $modified_unread_notifications ) ) {
+			$actions = array( 'new_group_pending', 'group_approved', 'group_rejected' );
+			foreach( $actions as $action ) { 
+				$modified_notification_component = BP_Notifications_Notification::update(
+					array(
+						'component_name'  => 'groups'
+					),
+					array(
+						'component_name'   => 'bp_mod_groups',
+						'component_action' => $action
+					)
+				);
+			}
+			
+		}
+
+		$bp_grp_moderation_settings_array = array(  
+			'bp_group_moderation_auto_approve_admin' => true,
+			'bp_group_moderation_send_emails'        => true
+		);
+
+		// Set default options.	
+		add_option( 'bp_group_moderation_general_settings', $bp_grp_moderation_settings_array );
+		
+	}
 }
 register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
 
@@ -79,7 +112,23 @@ register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
  * Deactivation hook for the plugin.
  */
 function bp_group_moderation_deactivate() {
-	//No actions defined yet.
+	
+	/**
+	 * To avoid blank notification formatting.
+	 * On plugin deactivation modified the notification component of plugin generated notifications.
+	 * 
+	*/
+	$actions = array( 'new_group_pending', 'group_approved', 'group_rejected' );
+	foreach( $actions as $action ) {
+		$modified_notification_component = BP_Notifications_Notification::update(
+			array(
+				'component_name'  => 'bp_mod_groups'
+			),
+			array(
+				'component_action' => $action
+			)
+		);
+	}
 }
 register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
 
