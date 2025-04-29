@@ -478,17 +478,17 @@ class BP_Group_Moderation_Admin {
 		$groups_table = $bp->groups->table_name;
 		$meta_table = $bp->groups->table_name_groupmeta;
 
-		$query = $wpdb->prepare(
+		//phpcs:disable
+		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT g.* FROM {$groups_table} g            
 			INNER JOIN {$meta_table} m ON g.id = m.group_id
 			WHERE m.meta_key = %s AND m.meta_value = %s
 			ORDER BY g.date_created DESC",
 			'approval_status',
 			'pending'
-		);
+		) );
+		//phpcs:enable 
 		
-		$results = $wpdb->get_results( $query );
-
 		// Convert to BP group objects.
 		$groups = array();
 		foreach ( $results as $result ) {

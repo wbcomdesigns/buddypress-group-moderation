@@ -23,13 +23,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 		<div class="wbcom-welcome-content">
 			<div class="wbcom-welcome-support-info">
 				<h3><?php esc_html_e( 'Help &amp; Support Resources', 'bp-group-moderation' ); ?></h3>
-				<p><?php esc_html_e( 'Here are all the resources you may need to get help from us. Documentation is usually the best place to start. Should you require help anytime, our customer care team is available to assist you at the support center', 'bp-group-moderation' ); ?></p>
+				<p><?php esc_html_e( 'If you need assistance, here are some helpful resources. Our documentation is a great place to start, and our support team is available if you require further help.', 'bp-group-moderation' ); ?></p>
 
 				<div class="wbcom-support-info-wrap">
 					<div class="wbcom-support-info-widgets">
 						<div class="wbcom-support-inner">
 						<h3><span class="dashicons dashicons-book"></span><?php esc_html_e( 'Documentation', 'bp-group-moderation' ); ?></h3>
-						<p><?php esc_html_e( 'We have prepared an extensive guide on BuddyPress Group Moderation to learn all aspects of the plugin. You will find most of your answers here.', 'bp-group-moderation' ); ?></p>
+						<p><?php esc_html_e( 'Explore our detailed guide on BuddyPress Member Blog to understand all the features and how to make the most of them.', 'bp-group-moderation' ); ?></p>
 						<a href="#" class="button button-primary button-welcome-support" target="_blank"><?php esc_html_e( 'Read Documentation', 'bp-group-moderation' ); ?></a>
 						</div>
 					</div>
@@ -37,14 +37,14 @@ if ( ! defined( 'ABSPATH' ) ) {
 					<div class="wbcom-support-info-widgets">
 						<div class="wbcom-support-inner">
 						<h3><span class="dashicons dashicons-sos"></span><?php esc_html_e( 'Support Center', 'bp-group-moderation' ); ?></h3>
-						<p><?php esc_html_e( 'We strive to offer the best customer care via our support center. Once your theme is activated, you can ask us for help anytime.', 'bp-group-moderation' ); ?></p>
+						<p><?php esc_html_e( 'Our support team is here to assist you with any questions or issues. Feel free to contact us anytime through our support center.', 'bp-group-moderation' ); ?></p>
 						<a href="<?php echo esc_url( 'https://wbcomdesigns.com/support/' ); ?>" class="button button-primary button-welcome-support" target="_blank"><?php esc_html_e( 'Get Support', 'bp-group-moderation' ); ?></a>
 					</div>
 					</div>
 					<div class="wbcom-support-info-widgets">
 						<div class="wbcom-support-inner">
-						<h3><span class="dashicons dashicons-admin-comments"></span><?php esc_html_e( 'Got Feedback?', 'bp-group-moderation' ); ?></h3>
-						<p><?php esc_html_e( 'We want to hear about your experience with the plugin. We would also love to hear any suggestions you may for future updates.', 'bp-group-moderation' ); ?></p>
+						<h3><span class="dashicons dashicons-admin-comments"></span><?php esc_html_e( 'Share Your Feedback', 'bp-group-moderation' ); ?></h3>
+						<p><?php esc_html_e( 'We’d love to hear about your experience with the plugin. Your feedback and suggestions help us improve future updates.', 'bp-group-moderation' ); ?></p>
 						<a href="<?php echo esc_url( 'https://wbcomdesigns.com/submit-review/' ); ?>" class="button button-primary button-welcome-support" target="_blank"><?php esc_html_e( 'Send Feedback', 'bp-group-moderation' ); ?></a>
 					</div>
 					</div>
