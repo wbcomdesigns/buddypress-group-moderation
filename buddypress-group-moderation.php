@@ -118,16 +118,10 @@ function bp_group_moderation_deactivate() {
 	 * On plugin deactivation modified the notification component of plugin generated notifications.
 	 * 
 	*/
+	global $wpdb;
 	$actions = array( 'new_group_pending', 'group_approved', 'group_rejected' );
 	foreach( $actions as $action ) {
-		$modified_notification_component = BP_Notifications_Notification::update(
-			array(
-				'component_name'  => 'bp_mod_groups'
-			),
-			array(
-				'component_action' => $action
-			)
-		);
+		$update_notification_component_name = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}bp_notifications SET component_name = %s WHERE component_action=%s", 'bp_mod_groups', $action ) );
 	}
 }
 register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
