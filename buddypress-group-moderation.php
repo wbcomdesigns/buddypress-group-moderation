@@ -71,7 +71,6 @@ add_action( 'plugins_loaded', 'bp_group_moderation_init' );
 function bp_group_moderation_activate() {
 	// Set default options.
 	add_option( 'bp_group_moderation_auto_approve_admin', true );
-	add_option( 'bp_group_moderation_hide_pending', true );
 	add_option( 'bp_group_moderation_send_emails', true );
 }
 register_activation_hook( __FILE__, 'bp_group_moderation_activate' );

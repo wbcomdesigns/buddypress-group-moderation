@@ -37,7 +37,6 @@ BuddyPress Group Moderation introduces a moderation system for BuddyPress groups
 You can configure the plugin by navigating to "BuddyPress → Pending Groups" and clicking on the "Settings" button. Available settings include:
 
 - **Auto-approve admin groups**: When enabled, groups created by site administrators are automatically approved
-- **Hide pending groups**: When enabled, pending groups are set to hidden status until approved
 - **Send email notifications**: When enabled, email notifications are sent in addition to BuddyPress on-site notifications
 
 ## Usage
