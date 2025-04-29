@@ -342,18 +342,14 @@ class BP_Group_Moderation_Admin {
 			if ( 'approved' === $decision ) {
 				$subject = sprintf( __( 'Your group "%s" has been approved', 'bp-group-moderation' ), $group_name );
 				$message = sprintf(
-					__( 'Good news! Your group "%1$s" has been approved by a site administrator and is now live with your requested visibility setting.
-
-					Visit your group: %2$s', 'bp-group-moderation' ),
+					__( 'Good news! Your group "%1$s" has been approved by a site administrator and is now live with your requested visibility setting.'.PHP_EOL.'Visit your group: %2$s', 'bp-group-moderation' ),
 					$group_name,
 					self::bp_group_moderation_get_group_url( $group )
 				);
 			} else {
 				$subject = sprintf( __( 'Your group "%s" was not approved', 'bp-group-moderation' ), $group_name );
 				$message = sprintf(
-					__( 'We\'re sorry, but your group "%s" has not been approved by the site administrators.
-
-					If you have questions about this decision, please contact the site administrators.', 'bp-group-moderation' ),
+					__( 'We\'re sorry, but your group "%s" has not been approved by the site administrators. '.PHP_EOL.'If you have questions about this decision, please contact the site administrators.', 'bp-group-moderation' ),
 					$group_name
 				);
 			}
