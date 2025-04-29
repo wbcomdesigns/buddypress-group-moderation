@@ -456,7 +456,9 @@ View the group: %4$s', 'bp-group-moderation' ),
 		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
 		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
 		
-		if ( current_user_can( 'manage_options' ) && defined('WP_DEBUG') && WP_DEBUG ) {
+		$group = groups_get_group($group_id);
+		
+		if ( current_user_can( 'manage_options' ) && defined('WP_DEBUG') && WP_DEBUG && ( bp_loggedin_user_id() != $group->creator_id ) && ( 'pending' === $approval_status ) ) {
 			?>
 			<div class="bp-feedback info">
 				<span class="bp-icon" aria-hidden="true"></span>
