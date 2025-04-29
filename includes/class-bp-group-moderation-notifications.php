@@ -105,9 +105,16 @@ class BP_Group_Moderation_Notifications {
 		if( function_exists( 'bp_is_notifications_component' ) && bp_is_notifications_component() ) { 
 			$notification_id = function_exists( 'bp_get_the_notification_id' ) ? bp_get_the_notification_id() : 0;
 		}
-		
+
+		if( empty( $group->name ) ) { 
+			$member_group_name = get_usermeta( $secondary_item_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
+		} else {
+			$member_group_name = $group->name;
+		}
+
+
 		$text = (1 === $total_items)
-			? sprintf(__('New group "%s" is pending approval', 'bp-group-moderation'), $group->name)
+			? sprintf(__('New group "%s" is pending approval', 'bp-group-moderation'), $member_group_name )
 			: sprintf(__('%d new groups are pending approval', 'bp-group-moderation'), $total_items);
 		
 		$link = admin_url( 'admin.php?page=bp-pending-groups' );
@@ -153,7 +160,7 @@ class BP_Group_Moderation_Notifications {
 	public function bp_group_moderation_format_group_approved_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
 
 		$group = groups_get_group( $item_id );
-	
+		
 		if ( ! $group ) {
 			return $action;
 		}
@@ -206,9 +213,12 @@ class BP_Group_Moderation_Notifications {
 		
 		$group = groups_get_group( $item_id );
 	
-		if ( ! $group ) {
+		if ( !$group || empty( $item_id ) ) {
 			return $action;
 		}
+
+		$user_id = bp_loggedin_user_id();
+		$group_name = get_usermeta( $user_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
 		
 		$notification_id =  0;
 
@@ -216,7 +226,7 @@ class BP_Group_Moderation_Notifications {
 			$notification_id = function_exists( 'bp_get_the_notification_id' ) ? bp_get_the_notification_id() : 0;
 		}
 		
-		$text = __( 'Your group was not approved by site administrators.', 'bp-group-moderation' );
+		$text = sprintf(__( 'Your group "%s" was not approved by site administrators.', 'bp-group-moderation' ), $group_name);
 		$link = bp_loggedin_user_domain() . 'notifications/';
 
 		if( $notification_id ) {

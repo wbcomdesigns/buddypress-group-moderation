@@ -326,6 +326,7 @@ class BP_Group_Moderation_Admin {
 			bp_notifications_add_notification( array(
 				'user_id'           => $creator_id,
 				'item_id'           => $group_id,
+				'secondary_item_id' => $group->creator_id,
 				'component_name'    => 'groups',
 				'component_action'  => 'group_' . $decision,
 				'date_notified'     => bp_core_current_time(),
@@ -357,6 +358,9 @@ If you have questions about this decision, please contact the site administrator
 				);
 			}
 			
+			if( !empty(  $group->name ) && !empty( $creator_id ) ) {
+				update_usermeta( $creator_id, 'bp_grp_moderation_rejected_group_'.$group_id, $group->name );
+			}
 			wp_mail( $creator->user_email, $subject, $message );
 		}
 	}

@@ -369,6 +369,7 @@ View the group: %4$s', 'bp-group-moderation' ),
 				bp_notifications_add_notification( array(
 					'user_id'           => $admin_id,
 					'item_id'           => $group_id,
+					'secondary_item_id' => $group->creator_id,
 					'component_name'    => 'groups',
 					'component_action'  => 'new_group_pending',
 					'date_notified'     => bp_core_current_time(),
