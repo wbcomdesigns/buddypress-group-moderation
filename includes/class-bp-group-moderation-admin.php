@@ -341,14 +341,14 @@ class BP_Group_Moderation_Admin {
 			
 			if ( 'approved' === $decision ) {
 				$subject = sprintf( __( 'Your Group Has Been Approved : %s', 'bp-group-moderation' ), $group_name );
-				$message = sprintf( __( apply_filters( 'bp_group_moderation_group_approve_mail', "<p><strong>Dear  %s </strong></p>
+				$message = sprintf( __( "<p><strong>Dear  %s </strong></p>
 					<p> We’re happy to let you know that your group, <strong>“%s”</strong>, has been reviewed and approved by our moderation team!</p>
 					<p> Your group is now live and visible to the community. You can start inviting members, sharing updates, and building discussions right away. </p>
 					<p><strong>View your group : </strong></p>
 					<p><a href='%s'>%s</a></p>
 					<p>Thank you for contributing to our community. If you have any questions or need help managing your group, feel free to reach out to us.</p>
 					<p><strong>Warm Regards,</strong></p>
-					<p><strong>The %s Team</strong></p>" ), 'bp-group-moderation' ),					
+					<p><strong>The %s Team</strong></p>", 'bp-group-moderation' ),					
 					
 					esc_html( bp_core_get_user_displayname( $creator_id ) ),
 					esc_html( $group_name ),
@@ -359,13 +359,13 @@ class BP_Group_Moderation_Admin {
 
 			} else {
 				$subject = sprintf( __( 'Group Submission Not Approved : %s', 'bp-group-moderation' ), $group_name );
-				$message = sprintf( __( apply_filters( 'bp_group_moderation_group_reject_mail',  "<p><strong>Dear  %s </strong></p>
+				$message = sprintf( __( "<p><strong>Dear  %s </strong></p>
 					<p>Thank you for submitting your group, <strong>“%s”</strong>, to our community platform. </p>
 					<p> After a thorough review, we regret to inform you that your group submission has not been approved by our moderation team at this time.</p>
 					<p>If you would like feedback on your submission or wish to explore how it could be revised to meet our community guidelines, please feel free to contact our support team.</p>
 					<p>We truly appreciate your involvement and hope you’ll continue to be an engaged member of our community.</p>
 					<p><strong>Warm regards,</strong></p>
-					<p><strong>The %s Team</strong></p>" ), 'bp-group-moderation' ),					
+					<p><strong>The %s Team</strong></p>" , 'bp-group-moderation' ),					
 					
 					esc_html( bp_core_get_user_displayname( $creator_id ) ),
 					esc_html( $group_name ),
@@ -377,6 +377,10 @@ class BP_Group_Moderation_Admin {
 				update_user_meta( $creator_id, 'bp_grp_moderation_rejected_group_'.$group_id, $group->name );
 			}
 			$headers = array('Content-Type: text/html; charset=UTF-8');
+
+			$subject = apply_filters( 'bp_group_moderation_group_decision_mail_subject', $subject );
+			$message = apply_filters( 'bp_group_moderation_group_decision_mail', $message, $group, $decision );
+
 			wp_mail( $creator->user_email, $subject, $message, $headers );
 		}
 	}

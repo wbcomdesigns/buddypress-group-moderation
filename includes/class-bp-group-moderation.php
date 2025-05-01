@@ -336,14 +336,14 @@ class BP_Group_Moderation {
 		
 		$subject = sprintf( __( 'New Group Pending Approval : %s', 'bp-group-moderation' ), $group->name );
 
-		$message = sprintf( __( apply_filters( 'bp_group_moderation_group_pending_mail', "<p><strong>Hello Admin</strong></p>
+		$message = sprintf( __( "<p><strong>Hello Admin</strong></p>
 			<p>A new group titled “%s” has been created by <strong>“%s”</strong> and is currently <strong>awaiting your approval</strong>.</p>
 			<p>Please review the submission to ensure it aligns with the community standards.</p>
 			<p><strong>View Group :</strong></p>
 			<p><a href='%s'>%s</a></p>
 			<p><strong>Approve or Reject :</strong></p>	
 			<p><a href='%s'>%s</a></p>	
-			<p><strong>Thank you for keeping our community safe and welcoming!<strong></p>" ), 'bp-group-moderation' ),
+			<p><strong>Thank you for keeping our community safe and welcoming!<strong></p>" , 'bp-group-moderation' ),
 
 			esc_html( $group->name ),
 			esc_html( bp_core_get_user_displayname( $group->creator_id ) ),
@@ -373,6 +373,9 @@ class BP_Group_Moderation {
 			if ( $send_email ) {
 				$admin_user = get_userdata( $admin_id );
 				$headers = array('Content-Type: text/html; charset=UTF-8');
+
+				$subject = apply_filters( 'bp_group_moderation_group_pending_mail_subject', $subject );
+				$message = apply_filters( 'bp_group_moderation_group_pending_mail', $message, $group_id, $admin_id );
 				wp_mail( $admin_user->user_email, $subject, $message, $headers );
 			}
 		}
