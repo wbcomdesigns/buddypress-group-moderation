@@ -42,7 +42,7 @@ class BP_Group_Moderation {
 		// Load text domain.
 		add_action( 'bp_init', array( $this, 'bp_group_moderation_load_plugin_textdomain' ) );
 		add_action( 'bp_loaded', array( $this, 'bp_group_moderation_init' ) );
-		add_action( 'init', array( $this, 'remove_action_notification' ) );
+		add_action( 'init', array( $this, 'bp_group_moderation_remove_action_notification' ) );
 	
 	}
 
@@ -51,7 +51,7 @@ class BP_Group_Moderation {
 	 * @since 1.0.0
 	 */
 
-	public function remove_action_notification(){
+	public function bp_group_moderation_remove_action_notification(){
 		
 		remove_action( 'groups_delete_group', 'bp_groups_delete_group_delete_all_notifications');
 	}
@@ -172,7 +172,7 @@ class BP_Group_Moderation {
 		    $group_obj->is_new = true;
 			
 			// Apply immediately and schedule a check
-			$this->process_new_group($group_obj);
+			$this->bp_group_moderation_process_new_group($group_obj);
 			
 			
 		}
@@ -184,13 +184,13 @@ class BP_Group_Moderation {
 	 *
 	 * @param BP_Groups_Group $group The group object.
 	 */
-	private function process_new_group( $group ) {
+	private function bp_group_moderation_process_new_group( $group ) {
 		// Check if this group already has approval status set
 		$existing_approval = groups_get_groupmeta( $group->id, 'approval_status', true );
 		if ( !empty( $existing_approval ) ) {
 			// If it's pending but not hidden, force it to hidden
 			if ( 'pending' === $existing_approval && 'hidden' !== $group->status ) {
-				$this->force_hidden_status($group->id);
+				$this->bp_group_moderation_force_hidden_status($group->id);
 			}
 			return;
 		}
@@ -222,10 +222,10 @@ class BP_Group_Moderation {
 		groups_update_groupmeta( $group->id, 'approval_status', 'pending' );
 		
 		// Force the group to hidden status
-		$this->force_hidden_status($group->id);
+		$this->bp_group_moderation_force_hidden_status($group->id);
 		
 		// Notify administrators.
-		$this->notify_admins_of_pending_group( $group->id );
+		$this->bp_group_moderation_notify_admins_of_pending_group( $group->id );
 	}
 	
 	/**
@@ -233,7 +233,7 @@ class BP_Group_Moderation {
 	 *
 	 * @param int $group_id The group ID.
 	 */
-	private function force_hidden_status( $group_id ) {
+	private function bp_group_moderation_force_hidden_status( $group_id ) {
 		// Get fresh group object
 		$group = groups_get_group( $group_id );
 		
@@ -278,7 +278,7 @@ class BP_Group_Moderation {
 				error_log( 'BP Group Moderation: Delayed check - Group ' . $group_id . ' is pending but not hidden, fixing...' );
 			}
 			
-			$this->force_hidden_status( $group_id );
+			$this->bp_group_moderation_force_hidden_status( $group_id );
 		}
 	}
 	
@@ -312,7 +312,7 @@ class BP_Group_Moderation {
 					error_log( 'BP Group Moderation: Scheduled check - Group ' . $group_id . ' is pending but not hidden, fixing...' );
 				}
 				
-				$this->force_hidden_status( $group_id );
+				$this->bp_group_moderation_force_hidden_status( $group_id );
 			}
 		}
 	}
@@ -322,7 +322,7 @@ class BP_Group_Moderation {
 	 *
 	 * @param int $group_id The group ID.
 	 */
-	public function notify_admins_of_pending_group( $group_id ) {
+	public function bp_group_moderation_notify_admins_of_pending_group( $group_id ) {
 		$group = groups_get_group( $group_id );
 		
 		// Get site administrators.
@@ -486,7 +486,7 @@ class BP_Group_Moderation {
 			// Ensure this group is hidden regardless of its current status
 			$group = groups_get_group( $group_id );
 			if ( 'hidden' !== $group->status ) {
-				$this->force_hidden_status( $group_id );
+				$this->bp_group_moderation_force_hidden_status( $group_id );
 			}
 			
 			// Show to group admins and site admins.
@@ -570,7 +570,7 @@ class BP_Group_Moderation {
 			groups_update_groupmeta( $group_id, 'approval_status', 'pending' );
 			
 			// Set to hidden while pending
-			$this->force_hidden_status( $group_id );
+			$this->bp_group_moderation_force_hidden_status( $group_id );
 			
 			bp_core_add_message( __( 'Group has been set to pending status.', 'bp-group-moderation' ), 'success' );
 		}

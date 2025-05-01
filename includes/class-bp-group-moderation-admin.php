@@ -160,7 +160,7 @@ class BP_Group_Moderation_Admin {
 			__( 'Pending Groups', 'bp-group-moderation' ),
 			'manage_options',
 			'bp-pending-groups',
-			array( $this, 'admin_page_content' )
+			array( $this, 'bp_group_moderation_admin_page_content' )
 		);
 	}
 
@@ -275,7 +275,7 @@ class BP_Group_Moderation_Admin {
 			groups_delete_groupmeta( $group_id, 'approval_status' );
 			
 			// Notify the group creator.
-			$this->notify_user_of_group_decision( $group, 'approved' );
+			$this->bp_group_moderation_notify_user_of_group_decision( $group, 'approved' );
 			
 			return true;
 		}
@@ -298,7 +298,7 @@ class BP_Group_Moderation_Admin {
 		}
 		
 		// Notify the creator before deleting the group.
-		$this->notify_user_of_group_decision( $group, 'rejected' );
+		$this->bp_group_moderation_notify_user_of_group_decision( $group, 'rejected' );
 		
 		// Delete the group.
 		$result = groups_delete_group( $group_id );
@@ -312,7 +312,7 @@ class BP_Group_Moderation_Admin {
 	 * @param BP_Groups_Group $group The group object.
 	 * @param string          $decision 'approved' or 'rejected'.
 	 */
-	public function notify_user_of_group_decision( $group, $decision ) {
+	public function bp_group_moderation_notify_user_of_group_decision( $group, $decision ) {
 		if ( ! in_array( $decision, array( 'approved', 'rejected' ) ) ) {
 			return;
 		}
@@ -384,7 +384,7 @@ class BP_Group_Moderation_Admin {
 	/**
 	 * Render the admin page content for managing pending groups.
 	 */
-	public function admin_page_content() {
+	public function bp_group_moderation_admin_page_content() {
 		
 		if( ( isset( $_GET[ 'action' ] ) || isset( $_GET[ 'id' ] ) )  && isset( $_GET['_wp_nonce'] ) ) {
 
