@@ -133,8 +133,8 @@ class BP_Group_Moderation_Admin {
 							<?php
 							foreach ( $group_mod_tabs as $group_mod_tab => $group_mod_name ) {
 								$class     = ( $group_mod_tab == $current ) ? 'nav-tab-active' : '';
-								$bmb_nonce = wp_create_nonce( 'bmb_nonce' );
-								echo '<li id="' . esc_attr( $group_mod_tab ) . '"><a class="nav-tab ' . esc_attr( $class ) . '" href="admin.php?page=bp-group-moderation&tab=' . esc_attr( $group_mod_tab ) . '&nonce=' . esc_attr( $bmb_nonce ) . '">' . esc_html( $group_mod_name ) . '</a></li>';
+								$bp_group_moderation_nonce = wp_create_nonce( 'bp_group_moderation_nonce' );
+								echo '<li id="' . esc_attr( $group_mod_tab ) . '"><a class="nav-tab ' . esc_attr( $class ) . '" href="admin.php?page=bp-group-moderation&tab=' . esc_attr( $group_mod_tab ) . '&nonce=' . esc_attr( $bp_group_moderation_nonce ) . '">' . esc_html( $group_mod_name ) . '</a></li>';
 							}
 							?>
 							</ul>
@@ -185,7 +185,7 @@ class BP_Group_Moderation_Admin {
 		
 		wp_localize_script( 'bp-group-moderation-admin', 'bpGroupModeration', array(
 			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
-			'nonce'         => wp_create_nonce( 'bp-group-moderation-nonce' ),
+			'nonce'         => wp_create_nonce( 'bp_group_moderation_nonce' ),
 			'approveText'   => __( 'Approve', 'bp-group-moderation' ),
 			'rejectText'    => __( 'Reject', 'bp-group-moderation' ),
 			'confirmReject' => __( 'Are you sure you want to reject this group? This action cannot be undone.', 'bp-group-moderation' ),
@@ -204,7 +204,7 @@ class BP_Group_Moderation_Admin {
 		}
 		
 		// Verify nonce.
-		check_ajax_referer( 'bp-group-moderation-nonce', 'nonce' );
+		check_ajax_referer( 'bp_group_moderation_nonce', 'nonce' );
 		
 		// Check user capabilities.
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -224,7 +224,7 @@ class BP_Group_Moderation_Admin {
 		// Process the action.
 		if ( 'approve' === $action ) {
 			$result = $this->bp_group_moderation_approve_group( $group_id );
-			$message = __( 'Group has been approved successfully.', 'bp-group-moderation' );
+			$message = __( 'Group approved successfully.', 'bp-group-moderation' );
 		} elseif ( 'reject' === $action ) {
 			$result = $this->bp_group_moderation_reject_group( $group_id );
 			$message = __( 'Group has been rejected.', 'bp-group-moderation' );
@@ -427,7 +427,7 @@ class BP_Group_Moderation_Admin {
 			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) :
 				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 				if ( ! wp_verify_nonce( $nonce, 'bp_pending_groups_settings' ) ) {
-					wp_die( esc_html__( 'Security check failed.', 'bp-group-moderation' ) );
+					wp_die( esc_html__( 'Security verification failed.', 'bp-group-moderation' ) );
 				}
 			?>
 			<?php else : ?>

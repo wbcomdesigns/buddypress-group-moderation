@@ -114,8 +114,8 @@ class BP_Group_Moderation_Notifications {
 
 
 		$text = (1 === $total_items)
-			? sprintf(__('New group "%s" is pending approval', 'bp-group-moderation'), $member_group_name )
-			: sprintf(__('%d new groups are pending approval', 'bp-group-moderation'), $total_items);
+			? sprintf(__('New group "%s" is pending approval.', 'bp-group-moderation'), $member_group_name )
+			: sprintf(__('%d new groups are pending approval.', 'bp-group-moderation'), $total_items);
 		
 		$link = admin_url( 'admin.php?page=bp-pending-groups' );
 		
@@ -171,7 +171,7 @@ class BP_Group_Moderation_Notifications {
 			$notification_id = function_exists( 'bp_get_the_notification_id' ) ? bp_get_the_notification_id() : 0;
 		}
 
-		$text = sprintf( __( 'Your group "%s" has been approved!', 'bp-group-moderation' ), $group->name );
+		$text = sprintf( __( 'Your group "%s" has been approved.', 'bp-group-moderation' ), $group->name );
 		$link = bp_get_group_url( $group );
 
 		if( $notification_id ) {
@@ -226,7 +226,7 @@ class BP_Group_Moderation_Notifications {
 			$notification_id = function_exists( 'bp_get_the_notification_id' ) ? bp_get_the_notification_id() : 0;
 		}
 		
-		$text = sprintf(__( 'Your group "%s" was not approved by site administrators.', 'bp-group-moderation' ), $group_name);
+		$text = sprintf(__( 'Your group "%s" was not approved by the site administrators.', 'bp-group-moderation' ), $group_name);
 		$link = bp_loggedin_user_domain() . 'notifications/';
 
 		if( $notification_id ) {

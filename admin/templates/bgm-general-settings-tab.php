@@ -40,7 +40,7 @@ $send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_s
 		<h3 class="wbcom-welcome-title"><?php esc_html_e( 'BuddyPress Group Moderation', 'bp-group-moderation' ); ?></h3>			
 	</div><!-- .wbcom-welcome-head -->
 	<div id="setting-error-bpgm_message" class="notice notice-success is-dismissible" style=<?php echo esc_attr( $bpgrp_settings_notice ); ?>> 
-		<p><strong><?php esc_html_e(' Settings saved successfully.', 'bp-group-moderation' );?></strong></p>
+		<p><strong><?php esc_html_e( 'Settings saved successfully.', 'bp-group-moderation' ); ?></strong></p>
 		<button type="button" class="notice-dismiss"></button>
 	</div>
 	<form method="post" action="">
@@ -50,7 +50,7 @@ $send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_s
 				<div class="wbcom-settings-section-wrap">
 					<div class="wbcom-settings-section-options-heading">
 						<label for="bp_group_moderation_auto_approve_admin"><?php esc_html_e( 'Auto-approve admin groups', 'bp-group-moderation' ); ?></label>
-						<p class="description"><?php esc_html_e( 'Automatically approve groups created by site administrators.', 'bp-group-moderation' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Automatically approve groups created by site administrators without requiring manual moderation.', 'bp-group-moderation' ); ?></p>
 					</div>
 					<div class="wbcom-settings-section-options">
 						<label class="wb-switch">
@@ -64,7 +64,7 @@ $send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_s
 				<div class="wbcom-settings-section-wrap">
 					<div class="wbcom-settings-section-options-heading">
 						<label for="bp_group_moderation_send_emails"><?php esc_html_e( 'Send email notifications', 'bp-group-moderation' ); ?></label>
-						<p class="description"><?php esc_html_e( 'Send email notifications in addition to BuddyPress notifications.', 'bp-group-moderation' ); ?></p>
+						<p class="description"><?php esc_html_e( 'Send email notifications related to moderation status updates.', 'bp-group-moderation' ); ?></p>
 					</div>
 					<div class="wbcom-settings-section-options">
 						<label class="wb-switch">

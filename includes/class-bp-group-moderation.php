@@ -47,10 +47,10 @@ class BP_Group_Moderation {
 	}
 
 	/** 
-	 * Remove action to remove notification delete functionality on group delete.
+	 * Removes notification deletion hooks for group deletion.
+	 * This allows custom handling of notifications when groups are deleted.
 	 * @since 1.0.0
 	 */
-
 	public function bp_group_moderation_remove_action_notification(){
 		
 		remove_action( 'groups_delete_group', 'bp_groups_delete_group_delete_all_notifications');
@@ -138,7 +138,7 @@ class BP_Group_Moderation {
 		if ( 'pending' === $approval_status ) {
 			// Force pending groups to stay hidden regardless of status changes
 			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Intercepted status change for group ' . $group->id . ' from ' . $old_status . ' to ' . $new_status . '. Forcing to hidden.' );
+				error_log( 'BP Group Moderation: Intercepted status change for group ' . $group->id . ' from ' . $old_status . ' to ' . $new_status . '. Forcing status to hidden.' );
 			}
 			
 			// Store the requested status if not already stored
@@ -165,13 +165,13 @@ class BP_Group_Moderation {
 		if( is_object( $group_obj ) && !empty( $group_obj ) ) {
 			
 			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Catch new group - ID: ' . $group_id );
+				error_log( 'BP Group Moderation: New group detected - ID: ' . $group_id );
 			}
 
 			// Set the is_new flag explicitly
 		    $group_obj->is_new = true;
 			
-			// Apply immediately and schedule a check
+			// Apply moderation settings immediately and schedule a status verification check
 			$this->bp_group_moderation_process_new_group($group_obj);
 			
 			
@@ -283,7 +283,8 @@ class BP_Group_Moderation {
 	}
 	
 	/**
-	 * Scheduled task to check all pending groups and ensure they're hidden
+	 * Scheduled task to verify all pending groups maintain hidden status. 
+	 * Runs on an hourly schedule to repair any status inconsistencies.
 	 */
 	public function bp_group_moderation_check_pending_groups_status() {
 		global $wpdb, $bp;
@@ -394,7 +395,7 @@ class BP_Group_Moderation {
 			return $groups;
 		}
 		
-		// Filter out pending groups for regular users.
+		// Remove pending groups from listings for non-admin users.
 		foreach ( $groups['groups'] as $key => $group ) {
 			$approval_status = groups_get_groupmeta( $group->id, 'approval_status', true );
 			
@@ -499,7 +500,7 @@ class BP_Group_Moderation {
 				?>
 				<div <?php if ( $id_attr ) echo 'id="' . esc_attr( $id_attr ) . '"'; ?> class="bp-feedback warning info">
 					<span class="bp-icon" aria-hidden="true"></span>
-					<p><?php esc_html_e( 'This group is pending approval by a site administrator. Some features may be limited until approval.', 'bp-group-moderation' ); ?></p>
+					<p><?php esc_html_e( 'Your group is currently awaiting approval from a site administrator. You will be notified once it has been approved.', 'bp-group-moderation' ); ?></p>
 				</div>
 				<?php
 			}
@@ -529,7 +530,7 @@ class BP_Group_Moderation {
 					'bp-group-mod-action' => 'clear-pending',
 					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
 				), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
-					<?php esc_html_e( 'Clear Pending Status', 'bp-group-moderation' ); ?>
+					<?php esc_html_e( 'Approve Group', 'bp-group-moderation' ); ?>
 				</a>
 
 				<a href="<?php echo esc_url( add_query_arg( array(
@@ -557,7 +558,7 @@ class BP_Group_Moderation {
 		// Verify the nonce for security to prevent CSRF attacks.
 		// wp_unslash is used to remove slashes added by WordPress, and sanitize_text_field ensures clean input.
 		if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'bp_group_mod_action_' . $group_id ) ) {
-			bp_core_add_message( __( 'Security check failed. Please try again.', 'bp-group-moderation' ), 'error' );
+			bp_core_add_message( __( 'Security verification failed. Please refresh the page and try again.', 'bp-group-moderation' ), 'error' );
 			bp_core_redirect( bp_get_group_permalink( groups_get_group( $group_id ) ) );
 			exit;
 		}
@@ -575,7 +576,7 @@ class BP_Group_Moderation {
 			// Set to hidden while pending
 			$this->bp_group_moderation_force_hidden_status( $group_id );
 			
-			bp_core_add_message( __( 'Group has been set to pending status.', 'bp-group-moderation' ), 'success' );
+			bp_core_add_message( __( 'Group has been marked as pending administrator approval', 'bp-group-moderation' ), 'success' );
 		}
 		elseif ( $action === 'clear-pending' ) {
 			// Get the requested status (if any)

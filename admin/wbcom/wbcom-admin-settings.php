@@ -67,7 +67,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for return plugin's WordPress repo download url.
+		 * Function to return the plugin's WordPress repository download URL.
 		 *
 		 * @since 2.0.0
 		 * @access public
@@ -78,7 +78,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for get plugin's WordPress repo download url.
+		 * Function to get the plugin's WordPress repository download URL.
 		 *
 		 * @since 2.0.0
 		 * @access public
@@ -104,7 +104,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for check plugin is installed or not.
+		 * Function to check whether the plugin is installed.
 		 *
 		 * @since 2.0.0
 		 * @access public
@@ -125,7 +125,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for check plugin's status.
+		 * Function to check the plugin's status.
 		 *
 		 * @since 2.0.0
 		 * @access public
@@ -144,7 +144,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for check plugin is activated or not.
+		 * Function to check whether the plugin is activated.
 		 *
 		 * @since 2.0.0
 		 * @access public
@@ -254,7 +254,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for include wbcom plugins list page.
+		 * Function to include the Wbcom plugins list page.
 		 *
 		 * @since 2.0.0
 		 * @access public
@@ -264,7 +264,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for include themes list page.
+		 * Function to include the themes list page.
 		 *
 		 * @since 2.0.0
 		 * @access public
@@ -274,7 +274,7 @@ if ( ! class_exists( 'Wbcom_Admin_Settings' ) ) {
 		}
 
 		/**
-		 * Function for include support page.
+		 * Function to include the support page.
 		 *
 		 * @since 2.0.0
 		 * @access public

@@ -54,7 +54,7 @@ function run_buddypress_group_moderation() {
 }
 
 /**
- * Checks that BuddyPress/Buddyboss is completly initialized.
+ * Checks that BuddyPress/Buddyboss is completely initialized.
  * After that initialize the plugin.
  */
 function bp_group_moderation_init() {
@@ -100,6 +100,9 @@ register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
 
 /**
  * Deactivation hook for the plugin.
+ *
+ * To avoid blank notification formatting on plugin deactivation,
+ * this modifies the notification component of plugin-generated notifications.
  */
 function bp_group_moderation_deactivate() {
 	
