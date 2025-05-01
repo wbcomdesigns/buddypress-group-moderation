@@ -340,24 +340,44 @@ class BP_Group_Moderation_Admin {
 			$creator = get_userdata( $creator_id );
 			
 			if ( 'approved' === $decision ) {
-				$subject = sprintf( __( 'Your group "%s" has been approved', 'bp-group-moderation' ), $group_name );
-				$message = sprintf(
-					__( 'Good news! Your group "%1$s" has been approved by a site administrator and is now live with your requested visibility setting.'.PHP_EOL.'Visit your group: %2$s', 'bp-group-moderation' ),
-					$group_name,
-					self::bp_group_moderation_get_group_url( $group )
+				$subject = sprintf( __( 'Your Group Has Been Approved : %s', 'bp-group-moderation' ), $group_name );
+				$message = sprintf( __( apply_filters( 'bp_group_moderation_group_approve_mail', "<p><strong>Dear  %s </strong></p>
+					<p> We’re happy to let you know that your group, <strong>“%s”</strong>, has been reviewed and approved by our moderation team!</p>
+					<p> Your group is now live and visible to the community. You can start inviting members, sharing updates, and building discussions right away. </p>
+					<p><strong>View your group : </strong></p>
+					<p><a href='%s'>%s</a></p>
+					<p>Thank you for contributing to our community. If you have any questions or need help managing your group, feel free to reach out to us.</p>
+					<p><strong>Warm Regards,</strong></p>
+					<p><strong>The %s Team</strong></p>" ), 'bp-group-moderation' ),					
+					
+					esc_html( bp_core_get_user_displayname( $creator_id ) ),
+					esc_html( $group_name ),
+					esc_url( self::bp_group_moderation_get_group_url( $group ) ),
+					esc_url( self::bp_group_moderation_get_group_url( $group ) ),
+					esc_html( get_bloginfo( 'name' ) )
 				);
+
 			} else {
-				$subject = sprintf( __( 'Your group "%s" was not approved', 'bp-group-moderation' ), $group_name );
-				$message = sprintf(
-					__( 'We\'re sorry, but your group "%s" has not been approved by the site administrators. '.PHP_EOL.'If you have questions about this decision, please contact the site administrators.', 'bp-group-moderation' ),
-					$group_name
+				$subject = sprintf( __( 'Group Submission Not Approved : %s', 'bp-group-moderation' ), $group_name );
+				$message = sprintf( __( apply_filters( 'bp_group_moderation_group_reject_mail',  "<p><strong>Dear  %s </strong></p>
+					<p>Thank you for submitting your group, <strong>“%s”</strong>, to our community platform. </p>
+					<p> After a thorough review, we regret to inform you that your group submission has not been approved by our moderation team at this time.</p>
+					<p>If you would like feedback on your submission or wish to explore how it could be revised to meet our community guidelines, please feel free to contact our support team.</p>
+					<p>We truly appreciate your involvement and hope you’ll continue to be an engaged member of our community.</p>
+					<p><strong>Warm regards,</strong></p>
+					<p><strong>The %s Team</strong></p>" ), 'bp-group-moderation' ),					
+					
+					esc_html( bp_core_get_user_displayname( $creator_id ) ),
+					esc_html( $group_name ),
+					esc_html( get_bloginfo( 'name' ) )
 				);
 			}
 			
 			if( !empty(  $group->name ) && !empty( $creator_id ) ) {
 				update_user_meta( $creator_id, 'bp_grp_moderation_rejected_group_'.$group_id, $group->name );
 			}
-			wp_mail( $creator->user_email, $subject, $message );
+			$headers = array('Content-Type: text/html; charset=UTF-8');
+			wp_mail( $creator->user_email, $subject, $message, $headers );
 		}
 	}
 

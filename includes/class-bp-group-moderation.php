@@ -334,18 +334,23 @@ class BP_Group_Moderation {
 		$group_url = self::bp_group_moderation_get_group_url( $group );
 		$admin_url = admin_url( 'admin.php?page=bp-pending-groups' );
 		
-		$subject = sprintf( __( 'New Group Pending Approval: %s', 'bp-group-moderation' ), $group->name );
-		
-		$message = sprintf(
-			__( 'A new group "%1$s" has been created by %2$s and is pending approval.
+		$subject = sprintf( __( 'New Group Pending Approval : %s', 'bp-group-moderation' ), $group->name );
 
-You can approve or reject this group from the admin dashboard: %3$s
+		$message = sprintf( __( apply_filters( 'bp_group_moderation_group_pending_mail', "<p><strong>Hello Admin</strong></p>
+			<p>A new group titled “%s” has been created by <strong>“%s”</strong> and is currently <strong>awaiting your approval</strong>.</p>
+			<p>Please review the submission to ensure it aligns with the community standards.</p>
+			<p><strong>View Group :</strong></p>
+			<p><a href='%s'>%s</a></p>
+			<p><strong>Approve or Reject :</strong></p>	
+			<p><a href='%s'>%s</a></p>	
+			<p><strong>Thank you for keeping our community safe and welcoming!<strong></p>" ), 'bp-group-moderation' ),
 
-View the group: %4$s', 'bp-group-moderation' ),
-			$group->name,
-			bp_core_get_user_displayname( $group->creator_id ),
-			$admin_url,
-			$group_url
+			esc_html( $group->name ),
+			esc_html( bp_core_get_user_displayname( $group->creator_id ) ),
+			esc_html( $group_url ),
+			esc_html( $group_url ),
+			esc_html( $admin_url ),
+			esc_html( $admin_url ),
 		);
 		
 		// Send notifications to all admins.
@@ -367,7 +372,8 @@ View the group: %4$s', 'bp-group-moderation' ),
 			$send_email = bp_group_moderation_fetch_settings( 'bp_group_moderation_send_emails' );
 			if ( $send_email ) {
 				$admin_user = get_userdata( $admin_id );
-				wp_mail( $admin_user->user_email, $subject, $message );
+				$headers = array('Content-Type: text/html; charset=UTF-8');
+				wp_mail( $admin_user->user_email, $subject, $message, $headers );
 			}
 		}
 	}
