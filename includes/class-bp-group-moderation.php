@@ -43,8 +43,82 @@ class BP_Group_Moderation {
 		add_action( 'bp_init', array( $this, 'bp_group_moderation_load_plugin_textdomain' ) );
 		add_action( 'bp_loaded', array( $this, 'bp_group_moderation_init' ) );
 		add_action( 'init', array( $this, 'bp_group_moderation_remove_action_notification' ) );
-	
+		add_action( 'bp_after_has_activities_parse_args', array( $this, 'bp_group_moderation_hide_pending_group_activity' ), 10,1 );
+	}	
+
+	/**
+	 * Function to hide group creation activity till the group is approved by the site administrator.
+	 * @param $activity_args Default activity args.
+	 * @return $activity_args Modified activity args.
+	 * 
+	 * @since 1.0.0
+	 */
+	public function bp_group_moderation_hide_pending_group_activity( $activity_args ) { 
+		
+		if( ! bp_is_active( 'groups' ) || ! function_exists( 'bp_activity_get_activity_id' ) ) {
+			return $activity_args;
+		}
+
+		$group_args = array( 
+			'status' => array( 'hidden' ),
+			'meta_query' => array(array(  
+				'key' => 'approval_status',
+				'value' => 'pending',
+				'compare' => '=='
+			))
+		);
+
+		$groups = groups_get_groups( $group_args);
+
+		$activity_ids_to_exclude = array();
+		$group_create_activity_ids = array();
+		$group_cover_activity_ids = array();
+		$group_profile_activity_ids = array();
+		
+		if( !empty( $groups['groups'] ) && is_array( $groups['groups'] ) ) {
+			foreach( $groups['groups'] as $group_object ) {
+				
+				$group_create_activity_id = bp_activity_get_activity_id( 
+					array( 
+						'item_id' => $group_object->id,
+						'type'    => 'created_group'
+					)
+				);
+
+				$group_cover_activity_id = bp_activity_get_activity_id( 
+					array( 
+						'item_id' => $group_object->id,
+						'type'    => 'new_group_cover_photo'
+					)
+				);
+
+				$group_profile_activity_id = bp_activity_get_activity_id( 
+					array( 
+						'item_id' => $group_object->id,
+						'type'    => 'new_group_avatar'
+					)
+				);
+
+				$group_create_activity_ids[] = $group_create_activity_id; 
+
+				if( !empty( $group_cover_activity_id ) ) {
+					$group_cover_activity_ids[] = $group_cover_activity_id; 
+				}
+				
+				if( !empty( $group_profile_activity_id ) ){
+					$group_profile_activity_ids[] = $group_profile_activity_id; 
+				}
+				
+			}
+		}	
+
+		$activity_ids_to_exclude  = array_merge( $group_create_activity_ids, $group_cover_activity_ids, $group_profile_activity_ids );
+
+		$activity_args['exclude'] = $activity_ids_to_exclude;
+
+		return $activity_args;
 	}
+	
 
 	/** 
 	 * Removes notification deletion hooks for group deletion.
