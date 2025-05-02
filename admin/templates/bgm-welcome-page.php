@@ -30,7 +30,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<div class="wbcom-support-inner">
 						<h3><span class="dashicons dashicons-book"></span><?php esc_html_e( 'Documentation', 'bp-group-moderation' ); ?></h3>
 						<p><?php esc_html_e( 'Explore our detailed guide on BuddyPress Member Blog to understand all the features and how to make the most of them.', 'bp-group-moderation' ); ?></p>
-						<a href="#" class="button button-primary button-welcome-support" target="_blank"><?php esc_html_e( 'Read Documentation', 'bp-group-moderation' ); ?></a>
+						<a href="https://docs.wbcomdesigns.com/doc_category/bp-group-moderation/" class="button button-primary button-welcome-support" target="_blank"><?php esc_html_e( 'Read Documentation', 'bp-group-moderation' ); ?></a>
 						</div>
 					</div>
 
