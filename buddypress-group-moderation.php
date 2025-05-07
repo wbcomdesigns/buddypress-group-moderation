@@ -124,7 +124,7 @@ register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
  */
 function bp_group_moderation_requires_buddypress() {
 
-	if ( ! class_exists( 'BuddyPress' ) || ! bp_is_active( 'groups' ) ) {
+	if ( ! class_exists( 'BuddyPress' ) || ! bp_is_active( 'groups' ) || ( function_exists('buddypress') && isset( buddypress()->buddyboss ) ) ) {
 		deactivate_plugins( plugin_basename( __FILE__ ) );
 		add_action( 'admin_notices', 'bp_group_moderation_required_plugin_admin_notice' );
 	}

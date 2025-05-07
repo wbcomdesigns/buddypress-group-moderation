@@ -20,20 +20,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 			<div class="wbcom-faq-section-row">
 				<div class="wbcom-faq-admin-row">
 					<button class="wbcom-faq-accordion">
-						<?php esc_html_e( 'Is this plugin compatible with BuddyBoss?', 'bp-group-moderation' ); ?>
+						<?php esc_html_e( 'Is this plugin compatible with Youzify?', 'bp-group-moderation' ); ?>
 					</button>
 					<div class="wbcom-faq-panel">
-						<p><?php esc_html_e( 'Yes, the BuddyPress Group Moderation Plugin works seamlessly with both BuddyPress and BuddyBoss platforms. It adjusts to the specific features and structure of each platform, allowing you to gather and analyze key community data.', 'bp-group-moderation' ); ?></p>
+						<p><?php esc_html_e( 'Yes, the BuddyPress Group Moderation Plugin is fully compatible with Youzify. ', 'bp-group-moderation' ); ?></p>
 					</div>
 				</div>
 			</div>
 			<div class="wbcom-faq-section-row">
 				<div class="wbcom-faq-admin-row">
 					<button class="wbcom-faq-accordion">
-						<?php esc_html_e( 'Is this plugin compatible with Youzify?', 'bp-group-moderation' ); ?>
+						<?php esc_html_e( 'Can I approve groups without changing their visibility type?', 'bp-group-moderation' ); ?>
 					</button>
 					<div class="wbcom-faq-panel">
-						<p><?php esc_html_e( 'Yes, the BuddyPress Group Moderation Plugin is fully compatible with Youzify. ', 'bp-group-moderation' ); ?></p>
+						<p><?php esc_html_e( 'Yes, when a group is approved, it automatically receives the visibility type (public, private, or hidden) that was originally requested by the creator.', 'bp-group-moderation' ); ?></p>
+					</div>
+				</div>
+			</div>
+			<div class="wbcom-faq-section-row">
+				<div class="wbcom-faq-admin-row">
+					<button class="wbcom-faq-accordion">
+						<?php esc_html_e( 'Will pending groups appear in group directories?', 'bp-group-moderation' ); ?>
+					</button>
+					<div class="wbcom-faq-panel">
+						<p><?php esc_html_e( 'By default, pending groups are hidden from regular users in group directories and activity streams. Only the group creator and site administrators can see pending groups.', 'bp-group-moderation' ); ?></p>
 					</div>
 				</div>
 			</div>
