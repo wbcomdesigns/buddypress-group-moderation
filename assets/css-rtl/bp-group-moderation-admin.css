@@ -1,0 +1,86 @@
+/**
+ * BuddyPress Group Moderation - Admin Styles
+ */
+
+/* Admin page header */
+.wrap h1 {
+    margin-bottom: 15px;
+}
+
+/* Table styles */
+.bp-group-moderation-table {
+    margin-top: 15px;
+}
+
+.bp-group-moderation-table th,
+.bp-group-moderation-table td {
+    padding: 12px 10px;
+}
+
+/* Action buttons */
+.bp-group-moderation-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* No items message */
+.bp-group-moderation-no-items {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+    padding: 20px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+/* Messages container */
+#bp-group-moderation-messages {
+    margin-top: 15px;
+}
+
+/* Make notices dismissible */
+.notice-dismiss {
+    cursor: pointer;
+}
+
+.nav-tab-wrapper ul li#support a.nav-tab::before {
+    content: "\f101";
+}
+
+.nav-tab-wrapper ul li#general a.nav-tab::before {
+    content: "\f111" !important;
+}
+
+#setting-error-bpgm_message {
+    position: absolute;
+    left: 50px;
+    z-index: 99;
+    margin-top: -40px;
+    border-radius: 10px;
+    line-height: normal;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: #10AB00;
+}
+
+@media screen and (min-width: 1190px) {
+    [dir='rtl'] #setting-error-bpgm_message {
+        right: 50px;
+        left: auto;
+    }
+}
+
+@media screen and (max-width: 1189px) {
+    #setting-error-bpgm_message {
+        margin: 0;
+        position: relative;
+        left: auto;
+        right: auto;
+    }
+}
+
+#setting-error-bpgm_message button.notice-dismiss:before {
+    color: red !important;
+}
+/*# sourceMappingURL=bp-group-moderation-admin.css.map */

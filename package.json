@@ -1,0 +1,25 @@
+{
+  "name": "buddypress-group-moderation",
+  "version": "1.0.0",
+  "url": "https://github.com/wbcomdesigns/buddypress-group-moderation",
+  "license": "GPL-2.0+",
+  "description": "Free WordPress plugin used to introduce a moderation system for BuddyPress groups, requiring admin approval for new groups before they become active.",
+  "devDependencies": {
+    "grunt": "^1.6.1",
+    "grunt-checktextdomain": "^1.0.1",
+    "grunt-contrib-cssmin": "^5.0.0",
+    "grunt-contrib-uglify": "^5.2.2",
+    "grunt-contrib-watch": "^1.1.0",
+    "grunt-rtlcss": "^2.0.2",
+    "grunt-shell": "^4.0.0",
+    "grunt-wp-i18n": "^1.0.3",
+    "load-grunt-tasks": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=6.9.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wbcomdesigns/buddypress-group-moderation"
+  }
+}

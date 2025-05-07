@@ -174,10 +174,21 @@ class BP_Group_Moderation_Admin {
 			return;
 		}
 
-		wp_enqueue_style( 'bp-group-moderation-admin', BP_GROUP_MODERATION_PLUGIN_URL . 'assets/css/bp-group-moderation-admin.css', array(), BP_GROUP_MODERATION_VERSION );
+		$rtl_css = is_rtl() ? '-rtl' : '';
+
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+			$css_extension = '.css';
+			$js_extension  = '.js';
+		} else {
+			$css_extension = '.min.css';
+			$js_extension  = '.min.js';
+		}
+
+		wp_enqueue_style( 'bp-group-moderation-admin', BP_GROUP_MODERATION_PLUGIN_URL . 'assets/css'.$rtl_css.'/bp-group-moderation-admin'.$css_extension, array(), BP_GROUP_MODERATION_VERSION );
+
 		wp_enqueue_script(
 			'bp-group-moderation-admin',
-			BP_GROUP_MODERATION_PLUGIN_URL . 'assets/js/bp-group-moderation-admin.js',
+			BP_GROUP_MODERATION_PLUGIN_URL . 'assets/js/bp-group-moderation-admin'.$js_extension,
 			array( 'jquery' ),
 			BP_GROUP_MODERATION_VERSION,
 			true
