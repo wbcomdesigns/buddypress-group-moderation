@@ -71,7 +71,7 @@ add_action( 'plugins_loaded', 'bp_group_moderation_init' );
  */
 function bp_group_moderation_activate() {
 	
-	if( class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) ) {
+	if( class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) && !isset( buddypress()->buddyboss ) ) {
 		
 		global $wpdb;
 
@@ -139,6 +139,7 @@ function bp_group_moderation_required_plugin_admin_notice() {
 	$plugin_name = esc_html__( 'BuddyPress Group Moderation', 'bp-group-moderation' );
 	$bp_plugin   = esc_html__( 'BuddyPress', 'bp-group-moderation' );
 	$bp_groups   = esc_html__( 'Groups Component', 'bp-group-moderation' );
+	$message     = '';
 	if ( ! class_exists( 'BuddyPress' ) ) {
 		$message = sprintf(
 			esc_html__( '%1$s requires %2$s to be installed and active.', 'bp-group-moderation' ),
@@ -150,6 +151,13 @@ function bp_group_moderation_required_plugin_admin_notice() {
 			esc_html__( '%1$s requires the %2$s to be enabled in the BuddyPress settings.', 'bp-group-moderation' ),
 			'<strong>' . esc_html( $plugin_name ) . '</strong>',
 			'<strong>' . esc_html( $bp_groups ) . '</strong>'
+		);
+	} elseif ( function_exists('buddypress') && isset( buddypress()->buddyboss ) ) {
+		$message = sprintf(
+			esc_html__( '%1$s only works with %2$s and requires %3$s to be installed and active.', 'bp-group-moderation' ),
+			'<strong>' . esc_html( $plugin_name ) . '</strong>',
+			'<strong>' . esc_html( $bp_plugin ) . '</strong>',
+			'<strong>' . esc_html( $bp_plugin ) . '</strong>'
 		);
 	}
 
@@ -165,7 +173,7 @@ function bp_group_moderation_activation_redirect_settings( $plugin ) {
     if ( is_multisite() ) {
        return;
     }
-   if ( plugin_basename( __FILE__ ) === $plugin && class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) ) {
+   if ( plugin_basename( __FILE__ ) === $plugin && class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) && !isset( buddypress()->buddyboss ) ) {
        if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'activate' && isset( $_REQUEST['plugin'] ) && $_REQUEST['plugin'] === $plugin ) { //phpcs:ignore
            wp_redirect( admin_url( 'admin.php?page=bp-group-moderation' ) );
            exit;
