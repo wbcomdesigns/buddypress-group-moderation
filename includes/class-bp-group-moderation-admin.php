@@ -73,11 +73,11 @@ class BP_Group_Moderation_Admin {
 	public function bp_group_moderation_add_plugin_settings_page() {			
 		if ( empty( $GLOBALS['admin_page_hooks']['wbcomplugins'] ) ) {
 
-			add_menu_page( esc_html__( 'WB Plugins', 'bp-group-moderation' ), esc_html__( 'WB Plugins', 'bp-group-moderation' ), 'manage_options', 'wbcomplugins', array( $this, 'bp_group_moderation_settings_page' ), 'dashicons-lightbulb', 59 );
+			add_menu_page( esc_html__( 'WB Plugins', 'buddypress-group-moderation' ), esc_html__( 'WB Plugins', 'buddypress-group-moderation' ), 'manage_options', 'wbcomplugins', array( $this, 'bp_group_moderation_settings_page' ), 'dashicons-lightbulb', 59 );
 
-			add_submenu_page( 'wbcomplugins', esc_html__( 'General', 'bp-group-moderation' ), esc_html__( 'General', 'bp-group-moderation' ), 'manage_options', 'wbcomplugins' );
+			add_submenu_page( 'wbcomplugins', esc_html__( 'General', 'buddypress-group-moderation' ), esc_html__( 'General', 'buddypress-group-moderation' ), 'manage_options', 'wbcomplugins' );
 		}
-		add_submenu_page( 'wbcomplugins', esc_html__( 'BuddyPress Group Moderation Settings Page', 'bp-group-moderation' ), esc_html__( 'Group Moderation', 'bp-group-moderation' ), 'manage_options', 'bp-group-moderation', array( $this, 'bp_group_moderation_settings_page' ) );
+		add_submenu_page( 'wbcomplugins', esc_html__( 'BuddyPress Group Moderation Settings Page', 'buddypress-group-moderation' ), esc_html__( 'Group Moderation', 'buddypress-group-moderation' ), 'manage_options', 'bp-group-moderation', array( $this, 'bp_group_moderation_settings_page' ) );
 	}
 
 	/**
@@ -90,9 +90,9 @@ class BP_Group_Moderation_Admin {
 		$group_mod_tabs = apply_filters(
 			'bp_group_moderation_admin_setting_tabs',
 			array(
-				'welcome'                => __( 'Welcome', 'bp-group-moderation' ),
-				'general'                => __( 'General', 'bp-group-moderation' ),
-				'support'                => __( 'Support', 'bp-group-moderation' ),
+				'welcome'                => __( 'Welcome', 'buddypress-group-moderation' ),
+				'general'                => __( 'General', 'buddypress-group-moderation' ),
+				'support'                => __( 'Support', 'buddypress-group-moderation' ),
 			)
 		);
 		?>
@@ -107,12 +107,12 @@ class BP_Group_Moderation_Admin {
 					<div class="wbcom_admin_header-wrapper">
 						<div id="wb_admin_plugin_name">
 							<?php							
-								esc_html_e( 'BuddyPress Group Moderation', 'bp-group-moderation' );
+								esc_html_e( 'BuddyPress Group Moderation', 'buddypress-group-moderation' );
 							?>
 							<span>
 							<?php
 								// translators: %s is replaced with the plugin version
-								printf( esc_html__( 'Version %s', 'bp-group-moderation' ), esc_html( BP_GROUP_MODERATION_VERSION ) );
+								printf( esc_html__( 'Version %s', 'buddypress-group-moderation' ), esc_html( BP_GROUP_MODERATION_VERSION ) );
 							?>
 							</span>
 						</div>
@@ -123,7 +123,7 @@ class BP_Group_Moderation_Admin {
 					<div class="wbcom-tabs-section">
 						<div class="nav-tab-wrapper">
 							<div class="wb-responsive-menu">
-								<span><?php esc_html_e( 'Menu', 'bp-group-moderation' ); ?></span>
+								<span><?php esc_html_e( 'Menu', 'buddypress-group-moderation' ); ?></span>
 								<input class="wb-toggle-btn" type="checkbox" id="wb-toggle-btn">
 								<label class="wb-toggle-icon" for="wb-toggle-btn">
 									<span class="wb-icon-bars"></span>
@@ -156,8 +156,8 @@ class BP_Group_Moderation_Admin {
 	public function bp_group_moderation_add_admin_menu() {
 		add_submenu_page(
 			'bp-groups',
-			__( 'Pending Groups', 'bp-group-moderation' ),
-			__( 'Pending Groups', 'bp-group-moderation' ),
+			__( 'Pending Groups', 'buddypress-group-moderation' ),
+			__( 'Pending Groups', 'buddypress-group-moderation' ),
 			'manage_options',
 			'bp-pending-groups',
 			array( $this, 'bp_group_moderation_admin_page_content' )
@@ -197,10 +197,10 @@ class BP_Group_Moderation_Admin {
 		wp_localize_script( 'bp-group-moderation-admin', 'bpGroupModeration', array(
 			'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
 			'nonce'         => wp_create_nonce( 'bp_group_moderation_nonce' ),
-			'approveText'   => __( 'Approve', 'bp-group-moderation' ),
-			'rejectText'    => __( 'Reject', 'bp-group-moderation' ),
-			'confirmReject' => __( 'Are you sure you want to reject this group? This action cannot be undone.', 'bp-group-moderation' ),
-			'loadingText'   => __( 'Processing...', 'bp-group-moderation' ),
+			'approveText'   => __( 'Approve', 'buddypress-group-moderation' ),
+			'rejectText'    => __( 'Reject', 'buddypress-group-moderation' ),
+			'confirmReject' => __( 'Are you sure you want to reject this group? This action cannot be undone.', 'buddypress-group-moderation' ),
+			'loadingText'   => __( 'Processing...', 'buddypress-group-moderation' ),
 		) );
 		
 	}
@@ -219,14 +219,14 @@ class BP_Group_Moderation_Admin {
 		
 		// Check user capabilities.
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'bp-group-moderation' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to perform this action.', 'buddypress-group-moderation' ) ) );
 		}
 		
 		$group_id = isset( $_POST['group_id'] ) ? intval( $_POST['group_id'] ) : 0;
 		$action = isset( $_POST['action_type'] ) ? sanitize_text_field( wp_unslash( $_POST['action_type'] ) ) : '';
 		
 		if ( ! $group_id || ! in_array( $action, array( 'approve', 'reject' ) ) ) {
-			wp_send_json_error( array( 'message' => __( 'Invalid request.', 'bp-group-moderation' ) ) );
+			wp_send_json_error( array( 'message' => __( 'Invalid request.', 'buddypress-group-moderation' ) ) );
 		}
 		
 		$result = false;
@@ -235,16 +235,16 @@ class BP_Group_Moderation_Admin {
 		// Process the action.
 		if ( 'approve' === $action ) {
 			$result = $this->bp_group_moderation_approve_group( $group_id );
-			$message = __( 'Group approved successfully.', 'bp-group-moderation' );
+			$message = __( 'Group approved successfully.', 'buddypress-group-moderation' );
 		} elseif ( 'reject' === $action ) {
 			$result = $this->bp_group_moderation_reject_group( $group_id );
-			$message = __( 'Group has been rejected.', 'bp-group-moderation' );
+			$message = __( 'Group has been rejected.', 'buddypress-group-moderation' );
 		}
 		
 		if ( $result ) {
 			wp_send_json_success( array( 'message' => $message ) );
 		} else {
-			wp_send_json_error( array( 'message' => __( 'An error occurred while processing the request.', 'bp-group-moderation' ) ) );
+			wp_send_json_error( array( 'message' => __( 'An error occurred while processing the request.', 'buddypress-group-moderation' ) ) );
 		}
 	}
 
@@ -351,7 +351,7 @@ class BP_Group_Moderation_Admin {
 			$creator = get_userdata( $creator_id );
 			
 			if ( 'approved' === $decision ) {
-				$subject = sprintf( __( 'Your Group Has Been Approved : %s', 'bp-group-moderation' ), $group_name );
+				$subject = sprintf( __( 'Your Group Has Been Approved : %s', 'buddypress-group-moderation' ), $group_name );
 				$message = sprintf( __( "<p><strong>Dear  %s </strong></p>
 					<p> We’re happy to let you know that your group, <strong>“%s”</strong>, has been reviewed and approved by our moderation team!</p>
 					<p> Your group is now live and visible to the community. You can start inviting members, sharing updates, and building discussions right away. </p>
@@ -359,7 +359,7 @@ class BP_Group_Moderation_Admin {
 					<p><a href='%s'>%s</a></p>
 					<p>Thank you for contributing to our community. If you have any questions or need help managing your group, feel free to reach out to us.</p>
 					<p><strong>Warm Regards,</strong></p>
-					<p><strong>The %s Team</strong></p>", 'bp-group-moderation' ),					
+					<p><strong>The %s Team</strong></p>", 'buddypress-group-moderation' ),					
 					
 					esc_html( bp_core_get_user_displayname( $creator_id ) ),
 					esc_html( $group_name ),
@@ -369,14 +369,14 @@ class BP_Group_Moderation_Admin {
 				);
 
 			} else {
-				$subject = sprintf( __( 'Group Submission Not Approved : %s', 'bp-group-moderation' ), $group_name );
+				$subject = sprintf( __( 'Group Submission Not Approved : %s', 'buddypress-group-moderation' ), $group_name );
 				$message = sprintf( __( "<p><strong>Dear  %s </strong></p>
 					<p>Thank you for submitting your group, <strong>“%s”</strong>, to our community platform. </p>
 					<p> After a thorough review, we regret to inform you that your group submission has not been approved by our moderation team at this time.</p>
 					<p>If you would like feedback on your submission or wish to explore how it could be revised to meet our community guidelines, please feel free to contact our support team.</p>
 					<p>We truly appreciate your involvement and hope you’ll continue to be an engaged member of our community.</p>
 					<p><strong>Warm regards,</strong></p>
-					<p><strong>The %s Team</strong></p>" , 'bp-group-moderation' ),					
+					<p><strong>The %s Team</strong></p>" , 'buddypress-group-moderation' ),					
 					
 					esc_html( bp_core_get_user_displayname( $creator_id ) ),
 					esc_html( $group_name ),
@@ -432,13 +432,13 @@ class BP_Group_Moderation_Admin {
 		$pending_groups = $this->bp_group_moderation_get_pending_groups();
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Pending Groups', 'bp-group-moderation' ); ?></h1>
+			<h1><?php esc_html_e( 'Pending Groups', 'buddypress-group-moderation' ); ?></h1>
 		
 			<?php 
 			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) :
 				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
 				if ( ! wp_verify_nonce( $nonce, 'bp_pending_groups_settings' ) ) {
-					wp_die( esc_html__( 'Security verification failed.', 'bp-group-moderation' ) );
+					wp_die( esc_html__( 'Security verification failed.', 'buddypress-group-moderation' ) );
 				}
 			?>
 			<?php else : ?>
@@ -448,11 +448,11 @@ class BP_Group_Moderation_Admin {
 					<table class="wp-list-table widefat fixed striped bp-group-moderation-table">
 						<thead>
 							<tr>
-								<th><?php esc_html_e( 'Group Name', 'bp-group-moderation' ); ?></th>
-								<th><?php esc_html_e( 'Creator', 'bp-group-moderation' ); ?></th>
-								<th><?php esc_html_e( 'Created', 'bp-group-moderation' ); ?></th>
-								<th><?php esc_html_e( 'Requested Type', 'bp-group-moderation' ); ?></th>
-								<th><?php esc_html_e( 'Actions', 'bp-group-moderation' ); ?></th>
+								<th><?php esc_html_e( 'Group Name', 'buddypress-group-moderation' ); ?></th>
+								<th><?php esc_html_e( 'Creator', 'buddypress-group-moderation' ); ?></th>
+								<th><?php esc_html_e( 'Created', 'buddypress-group-moderation' ); ?></th>
+								<th><?php esc_html_e( 'Requested Type', 'buddypress-group-moderation' ); ?></th>
+								<th><?php esc_html_e( 'Actions', 'buddypress-group-moderation' ); ?></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -477,10 +477,10 @@ class BP_Group_Moderation_Admin {
 								<td>
 									<div class="bp-group-moderation-actions">
 										<button class="button button-primary bp-group-approve" data-group-id="<?php echo esc_attr( $group->id ); ?>">
-											<?php esc_html_e( 'Approve', 'bp-group-moderation' ); ?>
+											<?php esc_html_e( 'Approve', 'buddypress-group-moderation' ); ?>
 										</button>
 										<button class="button bp-group-reject" data-group-id="<?php echo esc_attr( $group->id ); ?>">
-											<?php esc_html_e( 'Reject', 'bp-group-moderation' ); ?>
+											<?php esc_html_e( 'Reject', 'buddypress-group-moderation' ); ?>
 										</button>
 									</div>
 								</td>
@@ -490,7 +490,7 @@ class BP_Group_Moderation_Admin {
 					</table>
 				<?php else : ?>
 					<div class="bp-group-moderation-no-items">
-						<p><?php esc_html_e( 'No pending groups found.', 'bp-group-moderation' ); ?></p>
+						<p><?php esc_html_e( 'No pending groups found.', 'buddypress-group-moderation' ); ?></p>
 					</div>
 				<?php endif; ?>
 			<?php endif; ?>

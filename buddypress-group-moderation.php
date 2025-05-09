@@ -6,7 +6,7 @@
  * Version: 1.0.0
  * Author: Wbcom Designs
  * Author URI: https://wbcomdesigns.com
- * Text Domain: bp-group-moderation
+ * Text Domain: buddypress-group-moderation
  * Domain Path: /languages
  * License: GPL-2.0+
  * License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -40,6 +40,11 @@ require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderatio
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-admin.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-notifications.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'admin/wbcom/wbcom-admin-settings.php';
+require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'admin/wbcom/wbcom-paid-plugin-settings.php';
+/**
+ * Plugin license integration for future updates
+ */
+require_once BP_GROUP_MODERATION_PLUGIN_DIR. 'edd-license/edd-plugin-license.php';
 
 
 /**
@@ -136,25 +141,25 @@ add_action( 'admin_init', 'bp_group_moderation_requires_buddypress' );
  * Displays an admin notice indicating that BuddyPress and the group component are required.
  */
 function bp_group_moderation_required_plugin_admin_notice() {
-	$plugin_name = esc_html__( 'BuddyPress Group Moderation', 'bp-group-moderation' );
-	$bp_plugin   = esc_html__( 'BuddyPress', 'bp-group-moderation' );
-	$bp_groups   = esc_html__( 'Groups Component', 'bp-group-moderation' );
+	$plugin_name = esc_html__( 'BuddyPress Group Moderation', 'buddypress-group-moderation' );
+	$bp_plugin   = esc_html__( 'BuddyPress', 'buddypress-group-moderation' );
+	$bp_groups   = esc_html__( 'Groups Component', 'buddypress-group-moderation' );
 	$message     = '';
 	if ( ! class_exists( 'BuddyPress' ) ) {
 		$message = sprintf(
-			esc_html__( '%1$s requires %2$s to be installed and active.', 'bp-group-moderation' ),
+			esc_html__( '%1$s requires %2$s to be installed and active.', 'buddypress-group-moderation' ),
 			'<strong>' . esc_html( $plugin_name ) . '</strong>',
 			'<strong>' . esc_html( $bp_plugin ) . '</strong>'
 		);
 	} elseif ( ! bp_is_active( 'groups' ) ) {
 		$message = sprintf(
-			esc_html__( '%1$s requires the %2$s to be enabled in the BuddyPress settings.', 'bp-group-moderation' ),
+			esc_html__( '%1$s requires the %2$s to be enabled in the BuddyPress settings.', 'buddypress-group-moderation' ),
 			'<strong>' . esc_html( $plugin_name ) . '</strong>',
 			'<strong>' . esc_html( $bp_groups ) . '</strong>'
 		);
 	} elseif ( function_exists('buddypress') && isset( buddypress()->buddyboss ) ) {
 		$message = sprintf(
-			esc_html__( '%1$s only works with %2$s and requires %3$s to be installed and active.', 'bp-group-moderation' ),
+			esc_html__( '%1$s only works with %2$s and requires %3$s to be installed and active.', 'buddypress-group-moderation' ),
 			'<strong>' . esc_html( $plugin_name ) . '</strong>',
 			'<strong>' . esc_html( $bp_plugin ) . '</strong>',
 			'<strong>' . esc_html( $bp_plugin ) . '</strong>'

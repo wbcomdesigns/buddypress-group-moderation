@@ -37,10 +37,10 @@ $send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_s
 
 <div class="wbcom-tab-content">
 	<div class="wbcom-admin-title-section">
-		<h3 class="wbcom-welcome-title"><?php esc_html_e( 'BuddyPress Group Moderation', 'bp-group-moderation' ); ?></h3>			
+		<h3 class="wbcom-welcome-title"><?php esc_html_e( 'BuddyPress Group Moderation', 'buddypress-group-moderation' ); ?></h3>			
 	</div><!-- .wbcom-welcome-head -->
 	<div id="setting-error-bpgm_message" class="notice notice-success is-dismissible" style=<?php echo esc_attr( $bpgrp_settings_notice ); ?>> 
-		<p><strong><?php esc_html_e( 'Settings saved successfully.', 'bp-group-moderation' ); ?></strong></p>
+		<p><strong><?php esc_html_e( 'Settings saved successfully.', 'buddypress-group-moderation' ); ?></strong></p>
 		<button type="button" class="notice-dismiss"></button>
 	</div>
 	<form method="post" action="">
@@ -49,8 +49,8 @@ $send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_s
 			<div class="form-table">
 				<div class="wbcom-settings-section-wrap">
 					<div class="wbcom-settings-section-options-heading">
-						<label for="bp_group_moderation_auto_approve_admin"><?php esc_html_e( 'Auto-approve admin groups', 'bp-group-moderation' ); ?></label>
-						<p class="description"><?php esc_html_e( 'Automatically approve groups created by site administrators without requiring manual moderation.', 'bp-group-moderation' ); ?></p>
+						<label for="bp_group_moderation_auto_approve_admin"><?php esc_html_e( 'Auto-approve admin groups', 'buddypress-group-moderation' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Automatically approve groups created by site administrators without requiring manual moderation.', 'buddypress-group-moderation' ); ?></p>
 					</div>
 					<div class="wbcom-settings-section-options">
 						<label class="wb-switch">
@@ -63,8 +63,8 @@ $send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_s
             <div class="form-table">
 				<div class="wbcom-settings-section-wrap">
 					<div class="wbcom-settings-section-options-heading">
-						<label for="bp_group_moderation_send_emails"><?php esc_html_e( 'Send email notifications', 'bp-group-moderation' ); ?></label>
-						<p class="description"><?php esc_html_e( 'Send email notifications related to moderation status updates.', 'bp-group-moderation' ); ?></p>
+						<label for="bp_group_moderation_send_emails"><?php esc_html_e( 'Send email notifications', 'buddypress-group-moderation' ); ?></label>
+						<p class="description"><?php esc_html_e( 'Send email notifications related to moderation status updates.', 'buddypress-group-moderation' ); ?></p>
 					</div>
 					<div class="wbcom-settings-section-options">
 						<label class="wb-switch">
@@ -75,7 +75,7 @@ $send_emails        = bp_group_moderation_fetch_settings( 'bp_group_moderation_s
 			    </div>	
 			</div>		
 		</div>
-		 <input type="submit" name="bp_group_moderation_save_settings" class="button button-primary" value="<?php esc_attr_e( 'Save Settings', 'bp-group-moderation' ); ?>" />
+		 <input type="submit" name="bp_group_moderation_save_settings" class="button button-primary" value="<?php esc_attr_e( 'Save Settings', 'buddypress-group-moderation' ); ?>" />
 	</form>
 </div>
 

@@ -149,7 +149,7 @@ class BP_Group_Moderation {
 	 * Load the plugin text domain for translation.
 	 */
 	public function bp_group_moderation_load_plugin_textdomain() {
-		load_plugin_textdomain( 'bp-group-moderation', false, dirname( plugin_basename( BP_GROUP_MODERATION_PLUGIN_FILE ) ) . '/languages/' );
+		load_plugin_textdomain( 'buddypress-group-moderation', false, dirname( plugin_basename( BP_GROUP_MODERATION_PLUGIN_FILE ) ) . '/languages/' );
 	}
 
 	/**
@@ -409,7 +409,7 @@ class BP_Group_Moderation {
 		$group_url = self::bp_group_moderation_get_group_url( $group );
 		$admin_url = admin_url( 'admin.php?page=bp-pending-groups' );
 		
-		$subject = sprintf( __( 'New Group Pending Approval : %s', 'bp-group-moderation' ), $group->name );
+		$subject = sprintf( __( 'New Group Pending Approval : %s', 'buddypress-group-moderation' ), $group->name );
 
 		$message = sprintf( __( "<p><strong>Hello Admin</strong></p>
 			<p>A new group titled “%s” has been created by <strong>“%s”</strong> and is currently <strong>awaiting your approval</strong>.</p>
@@ -418,7 +418,7 @@ class BP_Group_Moderation {
 			<p><a href='%s'>%s</a></p>
 			<p><strong>Approve or Reject :</strong></p>	
 			<p><a href='%s'>%s</a></p>	
-			<p><strong>Thank you for keeping our community safe and welcoming!<strong></p>" , 'bp-group-moderation' ),
+			<p><strong>Thank you for keeping our community safe and welcoming!<strong></p>" , 'buddypress-group-moderation' ),
 
 			esc_html( $group->name ),
 			esc_html( bp_core_get_user_displayname( $group->creator_id ) ),
@@ -549,7 +549,7 @@ class BP_Group_Moderation {
 				<p>
 					<?php 
 					echo sprintf(
-						esc_html__( 'Debug Info: Group ID: %d, Approval Status: %s, Requested Status: %s', 'bp-group-moderation' ),
+						esc_html__( 'Debug Info: Group ID: %d, Approval Status: %s, Requested Status: %s', 'buddypress-group-moderation' ),
 						esc_html( $group_id ), 
 						esc_html( $approval_status ? $approval_status : 'Not set' ),
 						esc_html( $requested_status ? $requested_status : 'Not set' )
@@ -574,7 +574,7 @@ class BP_Group_Moderation {
 				?>
 				<div <?php if ( $id_attr ) echo 'id="' . esc_attr( $id_attr ) . '"'; ?> class="bp-feedback warning info">
 					<span class="bp-icon" aria-hidden="true"></span>
-					<p><?php esc_html_e( 'Your group is currently awaiting approval from a site administrator. You will be notified once it has been approved.', 'bp-group-moderation' ); ?></p>
+					<p><?php esc_html_e( 'Your group is currently awaiting approval from a site administrator. You will be notified once it has been approved.', 'buddypress-group-moderation' ); ?></p>
 				</div>
 				<?php
 			}
@@ -587,8 +587,8 @@ class BP_Group_Moderation {
 	public function bp_group_moderation_add_admin_test_buttons() {
 		$group_id = bp_get_current_group_id();
 		?>
-		<div class="bp-feedback bp-group-moderation-admin-tools" style="margin-bottom: 15px; background: #f0f0f0; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
-			<h4><?php esc_html_e( 'Group Moderation Admin Tools', 'bp-group-moderation' ); ?></h4>
+		<div class="bp-feedback buddypress-group-moderation-admin-tools" style="margin-bottom: 15px; background: #f0f0f0; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
+			<h4><?php esc_html_e( 'Group Moderation Admin Tools', 'buddypress-group-moderation' ); ?></h4>
 			<p>
 				<!-- Generate secure admin action URLs for group moderation.
 				Each link includes a nonce ('_wpnonce') created with a unique action name per group.
@@ -597,21 +597,21 @@ class BP_Group_Moderation {
 						'bp-group-mod-action' => 'set-pending',
 						'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
 					), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
-					<?php esc_html_e( 'Set as Pending', 'bp-group-moderation' ); ?>
+					<?php esc_html_e( 'Set as Pending', 'buddypress-group-moderation' ); ?>
 				</a>				
 
 				<a href="<?php echo esc_url( add_query_arg( array(
 					'bp-group-mod-action' => 'clear-pending',
 					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
 				), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
-					<?php esc_html_e( 'Approve Group', 'bp-group-moderation' ); ?>
+					<?php esc_html_e( 'Approve Group', 'buddypress-group-moderation' ); ?>
 				</a>
 
 				<a href="<?php echo esc_url( add_query_arg( array(
 					'bp-group-mod-action' => 'view-debug',
 					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
 				), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
-					<?php esc_html_e( 'View Group Debug Info', 'bp-group-moderation' ); ?>
+					<?php esc_html_e( 'View Group Debug Info', 'buddypress-group-moderation' ); ?>
 				</a>
 
 			</p>
@@ -632,7 +632,7 @@ class BP_Group_Moderation {
 		// Verify the nonce for security to prevent CSRF attacks.
 		// wp_unslash is used to remove slashes added by WordPress, and sanitize_text_field ensures clean input.
 		if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'bp_group_mod_action_' . $group_id ) ) {
-			bp_core_add_message( __( 'Security verification failed. Please refresh the page and try again.', 'bp-group-moderation' ), 'error' );
+			bp_core_add_message( __( 'Security verification failed. Please refresh the page and try again.', 'buddypress-group-moderation' ), 'error' );
 			bp_core_redirect( bp_get_group_permalink( groups_get_group( $group_id ) ) );
 			exit;
 		}
@@ -650,7 +650,7 @@ class BP_Group_Moderation {
 			// Set to hidden while pending
 			$this->bp_group_moderation_force_hidden_status( $group_id );
 			
-			bp_core_add_message( __( 'Group has been marked as pending administrator approval', 'bp-group-moderation' ), 'success' );
+			bp_core_add_message( __( 'Group has been marked as pending administrator approval', 'buddypress-group-moderation' ), 'success' );
 		}
 		elseif ( $action === 'clear-pending' ) {
 			// Get the requested status (if any)
@@ -666,7 +666,7 @@ class BP_Group_Moderation {
 				groups_delete_groupmeta( $group_id, 'requested_status' );
 			}
 		
-			bp_core_add_message( __( 'Pending status has been cleared.', 'bp-group-moderation' ), 'success' );
+			bp_core_add_message( __( 'Pending status has been cleared.', 'buddypress-group-moderation' ), 'success' );
 		}
 		elseif ( $action === 'view-debug' ) {
 			//phpcs:disable

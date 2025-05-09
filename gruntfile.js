@@ -9,7 +9,7 @@ module.exports = function (grunt) {
         // Check text domain
         checktextdomain: {
             options: {
-                text_domain: ['bp-group-moderation'], // Specify allowed domain(s)
+                text_domain: ['buddypress-group-moderation'], // Specify allowed domain(s)
                 keywords: [ // List keyword specifications
                     '__:1,2d',
                     '_e:1,2d',
