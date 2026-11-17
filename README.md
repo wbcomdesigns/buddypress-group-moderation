@@ -24,8 +24,8 @@ BuddyPress Group Moderation introduces a moderation system for BuddyPress groups
 
 1. Upload the `buddypress-group-moderation` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Navigate to "BuddyPress → Pending Groups" to view and manage pending groups
-4. Configure the plugin settings by clicking on the "Settings" button on the Pending Groups page
+3. Navigate to "Groups → Pending Groups" to view and manage pending groups
+4. Configure the plugin settings with the "Settings" link beside the Pending Groups page title, or under "WB Plugins → Group Moderation"
 
 ## Requirements
 
@@ -44,14 +44,14 @@ You can configure the plugin by navigating to Admin Menu "WB Plugins → Group M
 ### For Administrators
 
 1. When a new group is created, you'll receive a notification and (optionally) an email
-2. Go to "BuddyPress → Pending Groups" to see all pending groups
-3. Click "Approve" to approve the group with the originally requested visibility settings
+2. Go to "Groups → Pending Groups" to see pending groups, 20 per page, with the pending count shown on the menu item
+3. Click "Approve" to approve the group with the originally requested visibility settings, or tick several rows and click "Approve selected"
 4. Click "Reject" to delete the group and notify the creator
 
 ### For Group Creators
 
 1. When you create a new group, it will be set to pending status.
-2. You'll see a notice on your group page indicating that the group is pending approval.
+2. You'll see a notice on your group page indicating that the group is pending approval, and your groups list labels it "Pending approval, requested: <type>".
 3. When your group is approved or rejected, you'll receive a notification and (optionally) an email.
 4. If approved, your group will be set to the visibility type you originally requested.
 

@@ -154,10 +154,16 @@ class BP_Group_Moderation_Admin {
 	 * Add admin menu for managing pending groups.
 	 */
 	public function bp_group_moderation_add_admin_menu() {
+		$pending_count = current_user_can( 'manage_options' ) ? $this->bp_group_moderation_get_pending_groups( 1, 1 )['total'] : 0;
+		$menu_title    = __( 'Pending Groups', 'buddypress-group-moderation' );
+		if ( $pending_count ) {
+			$menu_title .= sprintf( ' <span class="awaiting-mod count-%1$d"><span class="pending-count">%2$s</span></span>', $pending_count, number_format_i18n( $pending_count ) );
+		}
+
 		add_submenu_page(
 			'bp-groups',
 			__( 'Pending Groups', 'buddypress-group-moderation' ),
-			__( 'Pending Groups', 'buddypress-group-moderation' ),
+			$menu_title,
 			'manage_options',
 			'bp-pending-groups',
 			array( $this, 'bp_group_moderation_admin_page_content' )
@@ -424,11 +430,18 @@ class BP_Group_Moderation_Admin {
 			}
 		}
 
-		// Get pending groups.
-		$pending_groups = $this->bp_group_moderation_get_pending_groups();
+		$per_page       = 20;
+		$paged          = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page number.
+		$pending        = $this->bp_group_moderation_get_pending_groups( $paged, $per_page );
+		$pending_groups = $pending['groups'];
+
+		// One users query for the page instead of get_userdata() per row.
+		cache_users( wp_list_pluck( $pending_groups, 'creator_id' ) );
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Pending Groups', 'buddypress-group-moderation' ); ?></h1>
+			<h1 class="wp-heading-inline"><?php esc_html_e( 'Pending Groups', 'buddypress-group-moderation' ); ?></h1>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=bp-group-moderation' ) ); ?>" class="page-title-action"><?php esc_html_e( 'Settings', 'buddypress-group-moderation' ); ?></a>
+			<hr class="wp-header-end">
 		
 			<?php 
 			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) :
@@ -440,10 +453,39 @@ class BP_Group_Moderation_Admin {
 			<?php else : ?>
 				<?php if ( ! empty( $pending_groups ) ) : ?>
 					<div id="bp-group-moderation-messages"></div>
-					
+
+					<div class="tablenav top">
+						<div class="alignleft actions bulkactions">
+							<button type="button" class="button bp-group-approve-selected"><?php esc_html_e( 'Approve selected', 'buddypress-group-moderation' ); ?></button>
+						</div>
+						<div class="tablenav-pages">
+							<span class="displaying-num">
+								<?php
+								/* translators: %s: number of pending groups. */
+								echo esc_html( sprintf( _n( '%s pending group', '%s pending groups', $pending['total'], 'buddypress-group-moderation' ), number_format_i18n( $pending['total'] ) ) );
+								?>
+							</span>
+							<?php
+							echo wp_kses_post(
+								(string) paginate_links(
+									array(
+										'base'      => add_query_arg( 'paged', '%#%' ),
+										'format'    => '',
+										'current'   => $paged,
+										'total'     => (int) ceil( $pending['total'] / $per_page ),
+										'prev_text' => '&lsaquo;',
+										'next_text' => '&rsaquo;',
+									)
+								)
+							);
+							?>
+						</div>
+					</div>
+
 					<table class="wp-list-table widefat fixed striped bp-group-moderation-table">
 						<thead>
 							<tr>
+								<td class="manage-column column-cb check-column"><input type="checkbox" aria-label="<?php esc_attr_e( 'Select all pending groups', 'buddypress-group-moderation' ); ?>"></td>
 								<th><?php esc_html_e( 'Group Name', 'buddypress-group-moderation' ); ?></th>
 								<th><?php esc_html_e( 'Creator', 'buddypress-group-moderation' ); ?></th>
 								<th><?php esc_html_e( 'Created', 'buddypress-group-moderation' ); ?></th>
@@ -457,6 +499,7 @@ class BP_Group_Moderation_Admin {
 								$requested_status = groups_get_groupmeta( $group->id, 'requested_status', true );
 							?>
 							<tr id="group-<?php echo esc_attr( $group->id ); ?>">
+								<th scope="row" class="check-column"><input type="checkbox" class="bp-group-select" value="<?php echo esc_attr( $group->id ); ?>" aria-label="<?php echo esc_attr( $group->name ); ?>"></th>
 								<td>
 								<a href="<?php echo esc_url( self::bp_group_moderation_get_group_url( $group ) ); ?>" target="_blank">
 									<?php echo esc_html( $group->name ); ?>
@@ -495,33 +538,31 @@ class BP_Group_Moderation_Admin {
 	}
 
 	/**
-	 * Get all pending groups.
+	 * Get one page of pending groups, newest first.
 	 *
-	 * @return array Array of group objects.
+	 * @param int $page     Page number, 1-based.
+	 * @param int $per_page Groups per page.
+	 * @return array { groups: BP_Groups_Group[], total: int }
 	 */
-	public function bp_group_moderation_get_pending_groups() {
-		global $wpdb, $bp;
-		
-		$groups_table = $bp->groups->table_name;
-		$meta_table = $bp->groups->table_name_groupmeta;
+	public function bp_group_moderation_get_pending_groups( $page = 1, $per_page = 20 ) {
+		$result = groups_get_groups(
+			array(
+				'show_hidden' => true,
+				'type'        => 'newest',
+				'per_page'    => $per_page,
+				'page'        => $page,
+				'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- approval_status is the plugin's only pending flag.
+					array(
+						'key'   => 'approval_status',
+						'value' => 'pending',
+					),
+				),
+			)
+		);
 
-		//phpcs:disable
-		$results = $wpdb->get_results( $wpdb->prepare(
-			"SELECT g.* FROM {$groups_table} g            
-			INNER JOIN {$meta_table} m ON g.id = m.group_id
-			WHERE m.meta_key = %s AND m.meta_value = %s
-			ORDER BY g.date_created DESC",
-			'approval_status',
-			'pending'
-		) );
-		//phpcs:enable 
-		
-		// Convert to BP group objects.
-		$groups = array();
-		foreach ( $results as $result ) {
-			$groups[] = groups_get_group( $result->id );
-		}
-		
-		return $groups;
+		return array(
+			'groups' => (array) $result['groups'],
+			'total'  => (int) $result['total'],
+		);
 	}
 }

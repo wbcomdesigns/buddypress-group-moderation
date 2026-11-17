@@ -159,6 +159,9 @@ class BP_Group_Moderation {
 		// Group creation hooks - Catch group creation in multiple stages
 		add_action( 'groups_group_create_complete', array( $this, 'bp_group_moderation_set_group_to_pending' ), 20, 1 );
 		
+		// Show the creator their group is pending instead of the temporary Hidden type.
+		add_filter( 'bp_get_group_type', array( $this, 'bp_group_moderation_pending_group_type' ), 10, 2 );
+
 		// Intercept group status changes directly
 		add_filter( 'bp_group_status_change', array( $this, 'bp_group_moderation_intercept_status_change' ), 10, 3 );
 		
@@ -181,6 +184,33 @@ class BP_Group_Moderation {
 
 		// Add hook for direct database access
 		add_action( 'bp_group_moderation_verify_status', array( $this, 'bp_group_moderation_verify_group_status' ), 10, 1 );
+	}
+
+	/**
+	 * Label a pending group by its approval state and the type its creator asked for.
+	 *
+	 * @param string          $type  Group type label from BuddyPress.
+	 * @param BP_Groups_Group $group The group object.
+	 * @return string
+	 */
+	public function bp_group_moderation_pending_group_type( $type, $group ) {
+		if ( empty( $group->id ) || 'pending' !== groups_get_groupmeta( $group->id, 'approval_status', true ) ) {
+			return $type;
+		}
+
+		$labels    = array(
+			'public'  => __( 'Public', 'buddypress-group-moderation' ),
+			'private' => __( 'Private', 'buddypress-group-moderation' ),
+			'hidden'  => __( 'Hidden', 'buddypress-group-moderation' ),
+		);
+		$requested = groups_get_groupmeta( $group->id, 'requested_status', true );
+
+		if ( ! isset( $labels[ $requested ] ) ) {
+			return __( 'Pending approval', 'buddypress-group-moderation' );
+		}
+
+		/* translators: %s: group type the creator requested (Public, Private or Hidden). */
+		return sprintf( __( 'Pending approval, requested: %s', 'buddypress-group-moderation' ), $labels[ $requested ] );
 	}
 
 	/**

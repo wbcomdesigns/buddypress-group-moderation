@@ -40,7 +40,10 @@
                     row.fadeOut(500, function() {
                         $(this).remove();
 
-                        if ($('.bp-group-moderation-table tbody tr').length === 0) {
+                        if ($('.bp-group-moderation-table tbody tr').length === 0 && $('.tablenav-pages .page-numbers').length) {
+                            // More pending groups on other pages: reload to pull the next batch in.
+                            window.location.reload();
+                        } else if ($('.bp-group-moderation-table tbody tr').length === 0) {
                             $('.bp-group-moderation-table').replaceWith(
                                 '<div class="bp-group-moderation-no-items">' +
                                 '<p>No pending groups found.</p>' +
@@ -85,6 +88,14 @@
     $(document).on('click', '.bp-group-approve', function(e) {
         e.preventDefault();
         handleGroupAction($(this), 'approve');
+    });
+
+    // Bulk approve: run the existing per-row approve for every ticked row.
+    $(document).on('click', '.bp-group-approve-selected', function(e) {
+        e.preventDefault();
+        $('.bp-group-moderation-table .bp-group-select:checked').each(function() {
+            handleGroupAction($('#group-' + $(this).val()).find('.bp-group-approve'), 'approve');
+        });
     });
 
     // Use event delegation for reject button
