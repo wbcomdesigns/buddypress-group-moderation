@@ -386,7 +386,13 @@ if ( ! class_exists( 'EDD_GROUP_MODERATION_PLUGIN_UPDATER' ) ) :
 				return;
 			}
 
-			if ( empty( $_REQUEST['slug'] ) ) {
+			if ( empty( $_REQUEST['slug'] ) || ! is_string( $_REQUEST['slug'] ) ) { // phpcs:ignore
+				return;
+			}
+
+			// Unknown slug: return, never die. $edd_plugin_data is shared with sibling plugins' updater copies on admin_init.
+			$slug = sanitize_key( wp_unslash( $_REQUEST['slug'] ) ); // phpcs:ignore
+			if ( ! isset( $edd_plugin_data[ $slug ] ) ) {
 				return;
 			}
 
@@ -394,7 +400,7 @@ if ( ! class_exists( 'EDD_GROUP_MODERATION_PLUGIN_UPDATER' ) ) :
 				wp_die( __( 'You do not have permission to install plugin updates', 'buddypress-group-moderation' ), __( 'Error', 'buddypress-group-moderation' ), array( 'response' => 403 ) );
 			}
 
-			$data         = $edd_plugin_data[ $_REQUEST['slug'] ];
+			$data         = $edd_plugin_data[ $slug ];
 			$beta         = ! empty( $data['beta'] ) ? true : false;
 			$cache_key    = md5( 'edd_plugin_' . sanitize_key( $_REQUEST['plugin'] ) . '_' . $beta . '_version_info' );
 			$version_info = $this->get_cached_version_info( $cache_key );
@@ -404,7 +410,7 @@ if ( ! class_exists( 'EDD_GROUP_MODERATION_PLUGIN_UPDATER' ) ) :
 					'edd_action' => 'get_version',
 					'item_name'  => isset( $data['item_name'] ) ? $data['item_name'] : false,
 					'item_id'    => isset( $data['item_id'] ) ? $data['item_id'] : false,
-					'slug'       => $_REQUEST['slug'],
+					'slug'       => $slug,
 					'author'     => $data['author'],
 					'url'        => home_url(),
 					'beta'       => ! empty( $data['beta'] ),
@@ -439,8 +445,10 @@ if ( ! class_exists( 'EDD_GROUP_MODERATION_PLUGIN_UPDATER' ) ) :
 				$this->set_version_info_cache( $version_info, $cache_key );
 			}
 
-			if ( ! empty( $version_info ) && isset( $version_info->sections['changelog'] ) ) {
-				echo '<div style="background:#fff;padding:10px;">' . $version_info->sections['changelog'] . '</div>';
+			// A cache hit is json_decode()d, so sections is a stdClass there and an array on a fresh fetch.
+			$sections = ! empty( $version_info->sections ) ? (array) $version_info->sections : array();
+			if ( ! empty( $sections['changelog'] ) ) {
+				echo '<div style="background:#fff;padding:10px;">' . wp_kses_post( $sections['changelog'] ) . '</div>';
 			}
 
 			exit;
