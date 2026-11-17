@@ -86,7 +86,7 @@ class BP_Group_Moderation_Admin {
 	 * @since 1.0.0
 	 */
 	public function bp_group_moderation_settings_page() {
-		$current          = filter_input( INPUT_GET, 'tab' ) ? filter_input( INPUT_GET, 'tab' ) : 'welcome';
+		$current          = filter_input( INPUT_GET, 'tab' ) ? filter_input( INPUT_GET, 'tab' ) : 'general';
 		$group_mod_tabs = apply_filters(
 			'bp_group_moderation_admin_setting_tabs',
 			array(
@@ -209,11 +209,7 @@ class BP_Group_Moderation_Admin {
 	 * Handle AJAX requests for group moderation actions.
 	 */
 	public function bp_group_moderation_ajax_handle_group() {
-		
-		if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
-			@error_reporting( 0 );
-		}
-		
+
 		// Verify nonce.
 		check_ajax_referer( 'bp_group_moderation_nonce', 'nonce' );
 		

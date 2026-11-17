@@ -111,7 +111,7 @@ msgid "Documentation"
 msgstr ""
 
 #: admin/templates/bgm-welcome-page.php:32
-msgid "Explore our detailed guide on BuddyPress Member Blog to understand all the features and how to make the most of them."
+msgid "Explore our detailed guide on BuddyPress Group Moderation to understand all the features and how to make the most of them."
 msgstr ""
 
 #: admin/templates/bgm-welcome-page.php:33

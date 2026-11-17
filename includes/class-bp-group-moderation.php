@@ -118,7 +118,6 @@ class BP_Group_Moderation {
 
 		return $activity_args;
 	}
-	
 
 	/** 
 	 * Removes notification deletion hooks for group deletion.
@@ -182,19 +181,6 @@ class BP_Group_Moderation {
 
 		// Add hook for direct database access
 		add_action( 'bp_group_moderation_verify_status', array( $this, 'bp_group_moderation_verify_group_status' ), 10, 1 );
-		
-		// Debug hook for admin users - add a button to test the function
-		if ( current_user_can('manage_options') && bp_is_group() ) {
-			if( class_exists( 'Youzify' ) ) {
-				add_action( 'bp_before_group_body', array( $this, 'bp_group_moderation_add_admin_test_buttons' ) );
-			} else {
-				add_action( 'bp_before_group_header', array( $this, 'bp_group_moderation_add_admin_test_buttons' ) );
-			}
-			
-		}
-		
-		// Handle admin actions
-		add_action( 'bp_actions', array( $this, 'bp_group_moderation_handle_admin_test_actions' ) );
 	}
 
 	/**
@@ -211,9 +197,6 @@ class BP_Group_Moderation {
 		
 		if ( 'pending' === $approval_status ) {
 			// Force pending groups to stay hidden regardless of status changes
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Intercepted status change for group ' . $group->id . ' from ' . $old_status . ' to ' . $new_status . '. Forcing status to hidden.' );
-			}
 			
 			// Store the requested status if not already stored
 			$requested_status = groups_get_groupmeta( $group->id, 'requested_status', true );
@@ -237,18 +220,13 @@ class BP_Group_Moderation {
 		$group_obj = groups_get_group( $group_id );
 
 		if( is_object( $group_obj ) && !empty( $group_obj ) ) {
-			
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: New group detected - ID: ' . $group_id );
-			}
 
 			// Set the is_new flag explicitly
 		    $group_obj->is_new = true;
 			
 			// Apply moderation settings immediately and schedule a status verification check
 			$this->bp_group_moderation_process_new_group($group_obj);
-			
-			
+
 		}
 
 	}
@@ -277,9 +255,6 @@ class BP_Group_Moderation {
 			$is_admin = user_can( $creator_id, 'manage_options' );
 			
 			if ( $is_admin ) {
-				if ( defined('WP_DEBUG') && WP_DEBUG ) {
-					error_log( 'BP Group Moderation: Skipping moderation for admin-created group ' . $group->id );
-				}
 				return;
 			}
 		}
@@ -287,11 +262,7 @@ class BP_Group_Moderation {
 		// Store the original requested status
 		$original_status = $group->status;
 		groups_update_groupmeta( $group->id, 'requested_status', $original_status );
-		
-		if ( defined('WP_DEBUG') && WP_DEBUG ) {
-			error_log( 'BP Group Moderation: Stored original status: ' . $original_status );
-		}
-		
+
 		// Set approval status to pending
 		groups_update_groupmeta( $group->id, 'approval_status', 'pending' );
 		
@@ -313,18 +284,11 @@ class BP_Group_Moderation {
 		
 		// Try BP's standard method first
 		$group->status = 'hidden';
-		$result = $group->save();
-		
-		if ( defined('WP_DEBUG') && WP_DEBUG ) {
-			error_log( 'BP Group Moderation: Set group to hidden status. Save result: ' . ($result ? 'Success' : 'Failed') );
-		}
-		
+		$group->save();
+
 		// Double-check it worked and use direct DB access if needed
 		$updated_group = groups_get_group( $group_id );
 		if ( 'hidden' !== $updated_group->status ) {
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Group status not set to hidden properly. Using direct database update.' );
-			}
 			
 			// Use direct database update
 			global $wpdb, $bp;
@@ -348,9 +312,6 @@ class BP_Group_Moderation {
 		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
 		
 		if ( 'pending' === $approval_status && 'hidden' !== $group->status ) {
-			if ( defined('WP_DEBUG') && WP_DEBUG ) {
-				error_log( 'BP Group Moderation: Delayed check - Group ' . $group_id . ' is pending but not hidden, fixing...' );
-			}
 			
 			$this->bp_group_moderation_force_hidden_status( $group_id );
 		}
@@ -383,9 +344,6 @@ class BP_Group_Moderation {
 			$group = groups_get_group( $group_id );
 			
 			if ( 'hidden' !== $group->status ) {
-				if ( defined('WP_DEBUG') && WP_DEBUG ) {
-					error_log( 'BP Group Moderation: Scheduled check - Group ' . $group_id . ' is pending but not hidden, fixing...' );
-				}
 				
 				$this->bp_group_moderation_force_hidden_status( $group_id );
 			}
@@ -536,30 +494,9 @@ class BP_Group_Moderation {
 			return;
 		}
 		
-		$group_id = bp_get_current_group_id();
+		$group_id        = bp_get_current_group_id();
 		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
-		$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
-		
-		$group = groups_get_group($group_id);
-		
-		if ( current_user_can( 'manage_options' ) && defined('WP_DEBUG') && WP_DEBUG && ( bp_loggedin_user_id() != $group->creator_id ) && ( 'pending' === $approval_status ) ) {
-			?>
-			<div class="bp-feedback info">
-				<span class="bp-icon" aria-hidden="true"></span>
-				<p>
-					<?php 
-					echo sprintf(
-						esc_html__( 'Debug Info: Group ID: %d, Approval Status: %s, Requested Status: %s', 'buddypress-group-moderation' ),
-						esc_html( $group_id ), 
-						esc_html( $approval_status ? $approval_status : 'Not set' ),
-						esc_html( $requested_status ? $requested_status : 'Not set' )
-					); 
-					?>
-				</p>
-			</div>
-			<?php
-		}
-		
+
 		if ( 'pending' === $approval_status ) {
 			// Ensure this group is hidden regardless of its current status
 			$group = groups_get_group( $group_id );
@@ -579,126 +516,6 @@ class BP_Group_Moderation {
 				<?php
 			}
 		}
-	}
-
-	/**
-	 * Add admin test buttons for debugging.
-	 */
-	public function bp_group_moderation_add_admin_test_buttons() {
-		$group_id = bp_get_current_group_id();
-		?>
-		<div class="bp-feedback buddypress-group-moderation-admin-tools" style="margin-bottom: 15px; background: #f0f0f0; border: 1px solid #ccc; padding: 10px; border-radius: 4px;">
-			<h4><?php esc_html_e( 'Group Moderation Admin Tools', 'buddypress-group-moderation' ); ?></h4>
-			<p>
-				<!-- Generate secure admin action URLs for group moderation.
-				Each link includes a nonce ('_wpnonce') created with a unique action name per group.
-				This protects against CSRF when the links are clicked. -->
-				<a href="<?php echo esc_url( add_query_arg( array(
-						'bp-group-mod-action' => 'set-pending',
-						'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
-					), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
-					<?php esc_html_e( 'Set as Pending', 'buddypress-group-moderation' ); ?>
-				</a>				
-
-				<a href="<?php echo esc_url( add_query_arg( array(
-					'bp-group-mod-action' => 'clear-pending',
-					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
-				), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
-					<?php esc_html_e( 'Approve Group', 'buddypress-group-moderation' ); ?>
-				</a>
-
-				<a href="<?php echo esc_url( add_query_arg( array(
-					'bp-group-mod-action' => 'view-debug',
-					'_wpnonce'            => wp_create_nonce( 'bp_group_mod_action_' . $group_id ),
-				), self::bp_group_moderation_get_group_url( groups_get_group( $group_id ) ) ) ); ?>" class="button">
-					<?php esc_html_e( 'View Group Debug Info', 'buddypress-group-moderation' ); ?>
-				</a>
-
-			</p>
-		</div>
-		<?php
-	}
-	
-	/**
-	 * Handle admin test actions.
-	 */
-	public function bp_group_moderation_handle_admin_test_actions() {
-		if ( !bp_is_group() || !current_user_can('manage_options') || empty($_GET['bp-group-mod-action']) ) {
-			return;
-		}
-
-		$group_id = bp_get_current_group_id();
-
-		// Verify the nonce for security to prevent CSRF attacks.
-		// wp_unslash is used to remove slashes added by WordPress, and sanitize_text_field ensures clean input.
-		if ( empty( $_GET['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ), 'bp_group_mod_action_' . $group_id ) ) {
-			bp_core_add_message( __( 'Security verification failed. Please refresh the page and try again.', 'buddypress-group-moderation' ), 'error' );
-			bp_core_redirect( bp_get_group_permalink( groups_get_group( $group_id ) ) );
-			exit;
-		}
-		$action = sanitize_text_field( wp_unslash( $_GET['bp-group-mod-action'] ) );		
-		
-		$group = groups_get_group( $group_id );
-		
-		if ( $action === 'set-pending' ) {
-			// Store the current status as the requested status
-			groups_update_groupmeta( $group_id, 'requested_status', $group->status );
-			
-			// Set the approval status to pending
-			groups_update_groupmeta( $group_id, 'approval_status', 'pending' );
-			
-			// Set to hidden while pending
-			$this->bp_group_moderation_force_hidden_status( $group_id );
-			
-			bp_core_add_message( __( 'Group has been marked as pending administrator approval', 'buddypress-group-moderation' ), 'success' );
-		}
-		elseif ( $action === 'clear-pending' ) {
-			// Get the requested status (if any)
-			$requested_status = groups_get_groupmeta( $group_id, 'requested_status', true );
-			
-			// Remove the pending flag
-			groups_delete_groupmeta( $group_id, 'approval_status' );
-			
-			// If there was a requested status, restore it
-			if ( !empty($requested_status) ) {
-				$group->status = $requested_status;
-				$group->save();
-				groups_delete_groupmeta( $group_id, 'requested_status' );
-			}
-		
-			bp_core_add_message( __( 'Pending status has been cleared.', 'buddypress-group-moderation' ), 'success' );
-		}
-		elseif ( $action === 'view-debug' ) {
-			//phpcs:disable
-			// Get all group meta
-			global $wpdb, $bp;
-			$meta_table = $bp->groups->table_name_groupmeta;
-			$meta_data = $wpdb->get_results( $wpdb->prepare(
-				"SELECT meta_key, meta_value FROM {$meta_table} WHERE group_id = %d",
-				$group_id
-			));
-			//phpcs:enable
-			
-			// Display the debug info
-			echo '<div class="bp-feedback">';
-			echo '<h3>Group Debug Information</h3>';
-			echo '<p><strong>Group ID:</strong> ' . esc_html( $group_id ) . '</p>';
-			echo '<p><strong>Group Status:</strong> ' . esc_html( $group->status ) . '</p>';
-			echo '<p><strong>Created:</strong> ' . esc_html( $group->date_created ) . '</p>';
-			echo '<p><strong>Creator ID:</strong> ' . esc_html( $group->creator_id ) . '</p>';
-			echo '<p><strong>Description:</strong> ' . esc_html( $group->description ) . '</p>';
-			echo '<p><strong>Group Meta:</strong></p>';
-			echo '<ul>';
-			foreach ( $meta_data as $meta ) {
-				echo '<li><strong>' . esc_html($meta->meta_key) . ':</strong> ' . esc_html($meta->meta_value) . '</li>';
-			}
-			echo '</ul>';
-			echo '</div>';
-		}
-		
-		// Refresh the page without the query arg
-		bp_core_redirect( remove_query_arg( 'bp-group-mod-action', self::bp_group_moderation_get_group_url( $group ) ) );
-		exit;
 	}
 
 }

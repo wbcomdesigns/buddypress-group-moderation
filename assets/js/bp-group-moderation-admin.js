@@ -4,22 +4,11 @@
 (function($) {
     'use strict';
 
-    // Debugging function
-    function log(message, data = null) {
-        if (window.console && window.console.log) {
-            console.log('BP Group Moderation: ' + message);
-            if (data !== null) {
-                console.log(data);
-            }
-        }
-    }
-
     // Common function for handling group actions
     function handleGroupAction(button, actionType) {
         var groupId = button.data('group-id');
         var row = $('#group-' + groupId);
 
-        log('Action initiated: ' + actionType + ' for group ' + groupId);
 
         // Construct the payload
         var ajaxPayload = {
@@ -29,9 +18,6 @@
             nonce: bpGroupModeration.nonce
         };
 
-        // Log full request details
-        log('AJAX URL:', bpGroupModeration.ajaxUrl);
-        log('AJAX Payload:', ajaxPayload);
 
         // Disable buttons during processing
         button.prop('disabled', true).text(bpGroupModeration.loadingText);
@@ -43,7 +29,6 @@
             type: 'POST',
             data: ajaxPayload,
             success: function(response) {
-                log('AJAX Success:', response);
 
                 if (response.success) {
                     $('#bp-group-moderation-messages').html(
@@ -79,8 +64,6 @@
                 }
             },
             error: function(xhr, status, error) {
-                log('AJAX Error: ' + status + ' - ' + error);
-                log('AJAX Response Text:', xhr.responseText);
 
                 $('#bp-group-moderation-messages').html(
                     '<div class="notice notice-error is-dismissible"><p>' +
@@ -122,9 +105,6 @@
         });
     });
 
-    // Log initialization
-    log('Admin JavaScript Initialized');
-    log('Localized Object:', bpGroupModeration);
 
     // FAQ Accordion  
     var bpolls_elmt = document.getElementsByClassName( "wbcom-faq-accordion" );
