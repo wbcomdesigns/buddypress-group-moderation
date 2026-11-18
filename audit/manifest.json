@@ -2,7 +2,7 @@
   "plugin": {
     "slug": "buddypress-group-moderation",
     "name": "BuddyPress Group Moderation",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "main_file": "buddypress-group-moderation.php",
     "text_domain": "buddypress-group-moderation",
     "requires_php": "8.1",

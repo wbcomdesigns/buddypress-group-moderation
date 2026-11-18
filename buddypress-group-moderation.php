@@ -3,7 +3,7 @@
  * Plugin Name: BuddyPress Group Moderation
  * Plugin URI: https://wbcomdesigns.com/plugins/buddypress-group-moderation
  * Description: Introduces a moderation system for BuddyPress groups, requiring admin approval for new groups before they become active.
- * Version: 1.0.0
+ * Version: 1.0.1
  * Requires PHP: 8.1
  * Author: Wbcom Designs
  * Author URI: https://wbcomdesigns.com
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define plugin constants.
 if( ! defined( 'BP_GROUP_MODERATION_VERSION' ) ) {
-	define( 'BP_GROUP_MODERATION_VERSION', '1.0.0' );
+	define( 'BP_GROUP_MODERATION_VERSION', '1.0.1' );
 }
 if( ! defined( 'BP_GROUP_MODERATION_PLUGIN_FILE' ) ) {
 	define( 'BP_GROUP_MODERATION_PLUGIN_FILE', __FILE__ );

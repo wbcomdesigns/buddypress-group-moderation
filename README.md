@@ -1,7 +1,7 @@
 # BuddyPress Group Moderation
 
 **Author:** Wbcom Designs  
-**Version:** 1.0.0  
+**Version:** 1.0.1  
 **Requires at least:** WordPress 5.0, BuddyPress 5.0, PHP 8.1  
 **Tested up to:** WordPress 6.2, BuddyPress 11.0  
 **License:** GPL-2.0+
