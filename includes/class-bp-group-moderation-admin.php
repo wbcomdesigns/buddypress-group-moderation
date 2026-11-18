@@ -499,11 +499,20 @@ class BP_Group_Moderation_Admin {
 	 * @return array { groups: BP_Groups_Group[], total: int }
 	 */
 	public function bp_group_moderation_get_pending_groups( $page = 1, $per_page = 20, $search = '', $order = 'DESC' ) {
+		// Groups created in the same second tie on date_created, which makes LIMIT/OFFSET pages
+		// overlap. BP takes one orderby term and appends the direction, so add the id tiebreak
+		// to the term for this query only ("g.date_created DESC, g.id DESC").
+		$direction = 'ASC' === $order ? 'ASC' : 'DESC';
+		$tiebreak  = static function ( $term ) use ( $direction ) {
+			return 'g.date_created' === $term ? 'g.date_created ' . $direction . ', g.id' : $term;
+		};
+		add_filter( 'bp_groups_get_orderby_converted_by_term', $tiebreak );
+
 		$result = groups_get_groups(
 			array(
 				'show_hidden'  => true,
 				'orderby'      => 'date_created',
-				'order'        => 'ASC' === $order ? 'ASC' : 'DESC',
+				'order'        => $direction,
 				'search_terms' => '' !== $search ? $search : false,
 				'per_page'     => $per_page,
 				'page'         => $page,
@@ -515,6 +524,7 @@ class BP_Group_Moderation_Admin {
 				),
 			)
 		);
+		remove_filter( 'bp_groups_get_orderby_converted_by_term', $tiebreak );
 
 		return array(
 			'groups' => (array) $result['groups'],
