@@ -34,17 +34,19 @@ BuddyPress Group Moderation introduces a moderation system for BuddyPress groups
 
 ## Configuration
 
-Go to "WB Plugins → Group Moderation". The page has three tabs and a "Pending Groups" button showing the pending count.
+Go to "WB Plugins → Group Moderation". The page has two tabs and a "Pending Groups" button showing the pending count.
 
 **General**
 
 - **Auto-approve admin groups**: groups created by site administrators go live at once.
 - **Send email notifications**: email administrators about new pending groups, and email creators when their group is approved or rejected, in addition to BuddyPress on-site notifications.
-- **Delete settings on uninstall**: off by default. When on, deleting the plugin also deletes its settings and licence key.
-
-**License**: enter and activate the licence key that keeps plugin updates coming.
+- **Delete settings on uninstall**: off by default. When on, deleting the plugin also deletes its settings.
 
 **Support**: frequently asked questions and links to the documentation and support team.
+
+## Updates
+
+The plugin is free and needs no licence key. Updates come from the Wbcom Designs store (https://wbcomdesigns.com/) on one shared, pre-activated key built into the plugin: the `EDD_GROUP_MODERATION_FREE_LICENSE_KEY` constant in `edd-license/edd-plugin-license.php`, set at build time. `bin/build-release.sh` refuses to build a zip while it is empty. Store side, the BuddyPress Group Moderation download id must be listed in `wbcom_free_license_download_ids()` in the store's free licence passthrough, or update downloads are refused.
 
 ## Usage
 

@@ -42,7 +42,7 @@ require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderatio
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-notifications.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/class-bp-group-moderation-settings.php';
 /**
- * Plugin license integration for future updates
+ * Plugin updates from the Wbcom store on the built-in free licence key.
  */
 require_once BP_GROUP_MODERATION_PLUGIN_DIR. 'edd-license/edd-plugin-license.php';
 

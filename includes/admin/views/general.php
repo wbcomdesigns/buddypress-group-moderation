@@ -31,7 +31,7 @@ $bgm_fields = array(
 		'fields' => array(
 			'bp_group_moderation_delete_data_on_uninstall' => array(
 				'label' => __( 'Delete settings on uninstall', 'buddypress-group-moderation' ),
-				'desc'  => __( 'When the plugin is deleted, also delete its settings and licence key. Leave off to keep them for a reinstall.', 'buddypress-group-moderation' ),
+				'desc'  => __( 'When the plugin is deleted, also delete its settings. Leave off to keep them for a reinstall.', 'buddypress-group-moderation' ),
 			),
 		),
 	),

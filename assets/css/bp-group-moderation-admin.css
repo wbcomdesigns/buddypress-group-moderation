@@ -309,38 +309,6 @@
     color: var(--bgm-text-2);
 }
 
-/* License form (edd-license/edd-plugin-license.php). */
-.bgm-license__row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px var(--bgm-gap);
-}
-
-.bgm-license__row .regular-text {
-    flex: 1 1 260px;
-    max-width: 420px;
-}
-
-.bgm-license__status {
-    font-weight: 600;
-    color: var(--bgm-text-2);
-}
-
-.bgm-license__status--active {
-    color: var(--bgm-success);
-}
-
-.bgm-license__status--expired,
-.bgm-license__status--invalid {
-    color: var(--bgm-danger);
-}
-
-.bgm-license__message {
-    margin: 8px 0 0;
-    color: var(--bgm-text-2);
-}
-
 .bgm-hub {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

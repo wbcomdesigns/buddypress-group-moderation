@@ -3,7 +3,7 @@
  * Settings screen: WB Plugins > Group Moderation, on the suite card-panel shell.
  *
  * Replaces the legacy Wbcom wrapper (admin/wbcom/, admin/templates/). Tabs are
- * General, License and Support; the page opens on General. General saves through
+ * General and Support; the page opens on General. General saves through
  * the Settings API (options.php) into the same option the plugin always used.
  *
  * @package BuddyPress_Group_Moderation
@@ -68,7 +68,6 @@ class BP_Group_Moderation_Settings {
 			'bp_group_moderation_admin_setting_tabs',
 			array(
 				'general' => __( 'General', 'buddypress-group-moderation' ),
-				'license' => __( 'License', 'buddypress-group-moderation' ),
 				'support' => __( 'Support', 'buddypress-group-moderation' ),
 			)
 		);
@@ -118,7 +117,7 @@ class BP_Group_Moderation_Settings {
 	}
 
 	/**
-	 * Keep other plugins' notices off this screen; the License tab keeps the licence notices.
+	 * Keep other plugins' notices off this screen.
 	 */
 	public function suppress_foreign_notices() {
 		$screen = get_current_screen();
@@ -128,10 +127,6 @@ class BP_Group_Moderation_Settings {
 
 		remove_all_actions( 'admin_notices' );
 		remove_all_actions( 'all_admin_notices' );
-
-		if ( 'license' === $this->active_tab() && function_exists( 'edd_wbcom_group_moderation_admin_notices' ) ) {
-			add_action( 'admin_notices', 'edd_wbcom_group_moderation_admin_notices' );
-		}
 	}
 
 	/**

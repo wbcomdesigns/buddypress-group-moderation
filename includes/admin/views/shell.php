@@ -18,7 +18,6 @@ defined( 'ABSPATH' ) || exit;
 
 $bgm_icons = array(
 	'general' => 'dashicons-admin-settings',
-	'license' => 'dashicons-admin-network',
 	'support' => 'dashicons-sos',
 );
 ?>

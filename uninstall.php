@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall: delete the plugin's settings and licence data only when the site owner opted in
+ * Uninstall: delete the plugin's settings, and the licence data 1.0.0 stored, only when the site owner opted in
  * (General > Data > Delete settings on uninstall, off by default).
  *
  * @package BuddyPress_Group_Moderation

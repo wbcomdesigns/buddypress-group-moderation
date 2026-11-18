@@ -1,1 +1,0 @@
-TM1 edd-license/edd-plugin-license.php  # licence expiry date returned by the EDD store, date only (no time of day), shown on the License tab and the expiry notice; the plugin has no other formatted times
