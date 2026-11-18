@@ -39,7 +39,42 @@
 /* Action buttons */
 .bp-group-moderation-actions {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
+}
+
+/* Inline reject confirm */
+.bp-group-reject-confirm {
+    margin-block-start: 10px;
+    padding: 10px;
+    border: 1px solid var(--bgm-border);
+    border-radius: 4px;
+    background: var(--bgm-surface-2);
+}
+
+.bp-group-reject-confirm[hidden],
+.bp-group-moderation-no-items[hidden] {
+    display: none;
+}
+
+.bp-group-reject-confirm label {
+    display: block;
+    font-weight: 600;
+    margin-block-end: 4px;
+}
+
+.bp-group-reject-confirm textarea {
+    width: 100%;
+}
+
+.bp-group-reject-confirm .description {
+    margin-block: 4px 8px;
+}
+
+.bp-group-reject-confirm .bp-group-reject-confirm-yes {
+    color: var(--bgm-danger);
+    border-color: var(--bgm-danger);
 }
 
 /* No items message */
@@ -343,6 +378,59 @@
 }
 
 @media screen and (max-width: 782px) {
+    /* Pending Groups: one card per group, each cell labelled. */
+    .bp-group-moderation-table thead {
+        display: none;
+    }
+
+    .bp-group-moderation-table,
+    .bp-group-moderation-table tbody,
+    .bp-group-moderation-table tr,
+    .bp-group-moderation-table th,
+    .bp-group-moderation-table td {
+        display: block;
+        width: auto;
+    }
+
+    .bp-group-moderation-table tr {
+        position: relative;
+        padding-inline-start: 40px;
+        border-block-end: 1px solid var(--bgm-border);
+    }
+
+    .bp-group-moderation-table tbody .check-column {
+        position: absolute;
+        inset-inline-start: 0;
+        inset-block-start: 0;
+        padding: 12px 10px;
+    }
+
+    /* Beats core's responsive list-table rules (0,4,3), which expect a toggle button we do not use. */
+    .wp-list-table.bp-group-moderation-table tr:not(.inline-edit-row):not(.no-items) td[data-label] {
+        display: block;
+        padding: 4px 10px;
+    }
+
+    .wp-list-table.bp-group-moderation-table tr:not(.inline-edit-row):not(.no-items) td[data-label]::before {
+        position: static;
+        display: inline;
+        width: auto;
+        content: attr(data-label) ": ";
+        font-weight: 600;
+    }
+
+    .wp-list-table.bp-group-moderation-table tr:not(.inline-edit-row):not(.no-items) td[data-label]:last-child::before {
+        content: none;
+    }
+
+    .wp-list-table.bp-group-moderation-table tr:not(.inline-edit-row):not(.no-items) td[data-label]:last-child {
+        padding-block: 8px 12px;
+    }
+
+    .bp-group-moderation-actions .button {
+        min-height: 40px;
+    }
+
     .bgm-layout {
         grid-template-columns: minmax(0, 1fr);
         gap: var(--bgm-gap);

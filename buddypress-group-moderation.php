@@ -21,85 +21,84 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin constants.
-if( ! defined( 'BP_GROUP_MODERATION_VERSION' ) ) {
+if ( ! defined( 'BP_GROUP_MODERATION_VERSION' ) ) {
 	define( 'BP_GROUP_MODERATION_VERSION', '1.0.1' );
 }
-if( ! defined( 'BP_GROUP_MODERATION_PLUGIN_FILE' ) ) {
+if ( ! defined( 'BP_GROUP_MODERATION_PLUGIN_FILE' ) ) {
 	define( 'BP_GROUP_MODERATION_PLUGIN_FILE', __FILE__ );
 }
-if( ! defined( 'BP_GROUP_MODERATION_PLUGIN_DIR' ) ) {
+if ( ! defined( 'BP_GROUP_MODERATION_PLUGIN_DIR' ) ) {
 	define( 'BP_GROUP_MODERATION_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
-if( ! defined( 'BP_GROUP_MODERATION_PLUGIN_URL' ) ) {
+if ( ! defined( 'BP_GROUP_MODERATION_PLUGIN_URL' ) ) {
 	define( 'BP_GROUP_MODERATION_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 }
 
 
 // Include required files.
-include_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/bp-group-moderation-general-functions.php';
+require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/bp-group-moderation-general-functions.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-admin.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-notifications.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/class-bp-group-moderation-settings.php';
 /**
- * Plugin updates from the Wbcom store on the built-in free licence key.
+ * Plugin updates from the Wbcom store on the built-in free licence key. A partial upload or a
+ * security scanner can strip edd-license/; the plugin keeps working without automatic updates.
  */
-require_once BP_GROUP_MODERATION_PLUGIN_DIR. 'edd-license/edd-plugin-license.php';
-
+if ( file_exists( BP_GROUP_MODERATION_PLUGIN_DIR . 'edd-license/edd-plugin-license.php' ) ) {
+	require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'edd-license/edd-plugin-license.php';
+} else {
+	add_action( 'admin_notices', 'bp_group_moderation_license_files_missing_notice' );
+}
 
 /**
- * Initializes the plugin.
+ * Tell site admins that the update files are missing.
+ *
+ * @since 1.0.1
+ */
+function bp_group_moderation_license_files_missing_notice() {
+	if ( ! current_user_can( 'update_plugins' ) ) {
+		return;
+	}
+	printf(
+		'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
+		esc_html__( 'BuddyPress Group Moderation: the update files (edd-license folder) are missing, so automatic updates are off. Please reinstall the plugin from wbcomdesigns.com.', 'buddypress-group-moderation' )
+	);
+}
+
+/**
+ * Whether this site runs BuddyPress (not BuddyBoss) with the Groups component on.
+ *
+ * @since 1.0.1
+ * @return bool
+ */
+function bp_group_moderation_requirements_met() {
+	return function_exists( 'buddypress' ) && function_exists( 'bp_is_active' ) && ! isset( buddypress()->buddyboss ) && bp_is_active( 'groups' );
+}
+
+/**
+ * Initializes the plugin. Nothing is registered unless BuddyPress runs with the Groups component.
  */
 function run_buddypress_group_moderation() {
-	if( function_exists( 'bp_is_active' ) && bp_is_active( 'groups' ) ) {
+	if ( bp_group_moderation_requirements_met() ) {
 		BP_Group_Moderation::get_instance();
 		BP_Group_Moderation_Admin::get_instance();
 		BP_Group_Moderation_Notifications::get_instance();
 		( new BP_Group_Moderation_Settings() )->register();
 	}
 }
-
-/**
- * Checks that BuddyPress/Buddyboss is completely initialized.
- * After that initialize the plugin.
- */
-function bp_group_moderation_init() {
-	if ( has_action( 'bp_loaded' ) ) {
-		add_action( 'bp_include', 'run_buddypress_group_moderation' );
-	} elseif ( has_action( 'bbp_loaded' ) ) {
-		add_action( 'bbp_includes', 'run_buddypress_group_moderation' );
-	}
-}
-add_action( 'plugins_loaded', 'bp_group_moderation_init' );
+add_action( 'bp_include', 'run_buddypress_group_moderation' );
 
 /**
  * Activation hook for the plugin.
  */
 function bp_group_moderation_activate() {
-	
-	if( class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) && !isset( buddypress()->buddyboss ) ) {
-		
-		global $wpdb;
+	global $wpdb;
 
-		$modified_unread_notifications = $wpdb->get_results($wpdb->prepare( "SELECT * FROM {$wpdb->prefix}bp_notifications WHERE `user_id`=%d AND `component_name`=%s", bp_loggedin_user_id(), 'bp_mod_groups' ));
-
-		if( is_array( $modified_unread_notifications ) && !empty( $modified_unread_notifications ) ) {
-			$actions = array( 'new_group_pending', 'group_approved', 'group_rejected' );
-			foreach( $actions as $action ) { 
-				
-				$modified_notification_component = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}bp_notifications SET component_name = %s WHERE component_action=%s AND component_name=%s", 'groups', $action, 'bp_mod_groups' ) );
-			}
-			
-		}
-
-		$bp_grp_moderation_settings_array = array(  
-			'bp_group_moderation_auto_approve_admin' => true,
-			'bp_group_moderation_send_emails'        => true
-		);
-
-		// Set default options.	
-		add_option( 'bp_group_moderation_general_settings', $bp_grp_moderation_settings_array );
-		
+	// Deactivation moved this plugin's notifications out of sight; bring every member's back.
+	$table = ( function_exists( 'bp_core_get_table_prefix' ) ? bp_core_get_table_prefix() : $wpdb->base_prefix ) . 'bp_notifications';
+	if ( $table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( $wpdb->prepare( "UPDATE {$table} SET component_name = %s WHERE component_name = %s", 'groups', 'bp_mod_groups' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from BuddyPress.
 	}
 }
 register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
@@ -107,71 +106,60 @@ register_activation_hook( __FILE__, 'bp_group_moderation_activate' );
 /**
  * Deactivation hook for the plugin.
  *
- * To avoid blank notification formatting on plugin deactivation,
- * this modifies the notification component of plugin-generated notifications.
+ * Moves this plugin's notifications to a component nobody formats, so members do not see
+ * blank notifications while it is off. Activation moves them back.
  */
 function bp_group_moderation_deactivate() {
-	
-	/**
-	 * To avoid blank notification formatting.
-	 * On plugin deactivation modified the notification component of plugin generated notifications.
-	 * 
-	*/
 	global $wpdb;
-	$actions = array( 'new_group_pending', 'group_approved', 'group_rejected' );
-	foreach( $actions as $action ) {
-		$update_notification_component_name = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}bp_notifications SET component_name = %s WHERE component_action=%s", 'bp_mod_groups', $action ) );
+
+	$table = ( function_exists( 'bp_core_get_table_prefix' ) ? bp_core_get_table_prefix() : $wpdb->base_prefix ) . 'bp_notifications';
+	if ( $table === $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+		$wpdb->query( $wpdb->prepare( "UPDATE {$table} SET component_name = %s WHERE component_name = %s AND component_action IN ( 'new_group_pending', 'group_approved', 'group_rejected' )", 'bp_mod_groups', 'groups' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table name from BuddyPress.
 	}
 
-	// The hourly pending-status check is re-scheduled on bp_loaded when the plugin is active again.
+	// 1.0.0 scheduled an hourly check; make sure nothing is left behind.
 	wp_clear_scheduled_hook( 'bp_group_moderation_hourly_check' );
 }
 register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
 
 /**
- *  Check if BuddyPress and the group component are activated.
- */
-function bp_group_moderation_requires_buddypress() {
-
-	if ( ! class_exists( 'BuddyPress' ) || ! bp_is_active( 'groups' ) || ( function_exists('buddypress') && isset( buddypress()->buddyboss ) ) ) {
-		deactivate_plugins( plugin_basename( __FILE__ ) );
-		add_action( 'admin_notices', 'bp_group_moderation_required_plugin_admin_notice' );
-	}
-}
-
-add_action( 'admin_init', 'bp_group_moderation_requires_buddypress' );
-
-/**
  * Displays an admin notice indicating that BuddyPress and the group component are required.
  */
 function bp_group_moderation_required_plugin_admin_notice() {
+	if ( ! current_user_can( 'activate_plugins' ) || bp_group_moderation_requirements_met() ) {
+		return;
+	}
+
 	$plugin_name = esc_html__( 'BuddyPress Group Moderation', 'buddypress-group-moderation' );
 	$bp_plugin   = esc_html__( 'BuddyPress', 'buddypress-group-moderation' );
 	$bp_groups   = esc_html__( 'Groups Component', 'buddypress-group-moderation' );
 	$message     = '';
 	if ( ! class_exists( 'BuddyPress' ) ) {
 		$message = sprintf(
+			/* translators: 1: plugin name, 2: BuddyPress. */
 			esc_html__( '%1$s requires %2$s to be installed and active.', 'buddypress-group-moderation' ),
+			'<strong>' . esc_html( $plugin_name ) . '</strong>',
+			'<strong>' . esc_html( $bp_plugin ) . '</strong>'
+		);
+	} elseif ( isset( buddypress()->buddyboss ) ) {
+		$message = sprintf(
+			/* translators: 1: plugin name, 2: BuddyPress. */
+			esc_html__( '%1$s works with %2$s only and does nothing on BuddyBoss.', 'buddypress-group-moderation' ),
 			'<strong>' . esc_html( $plugin_name ) . '</strong>',
 			'<strong>' . esc_html( $bp_plugin ) . '</strong>'
 		);
 	} elseif ( ! bp_is_active( 'groups' ) ) {
 		$message = sprintf(
+			/* translators: 1: plugin name, 2: Groups Component. */
 			esc_html__( '%1$s requires the %2$s to be enabled in the BuddyPress settings.', 'buddypress-group-moderation' ),
 			'<strong>' . esc_html( $plugin_name ) . '</strong>',
 			'<strong>' . esc_html( $bp_groups ) . '</strong>'
 		);
-	} elseif ( function_exists('buddypress') && isset( buddypress()->buddyboss ) ) {
-		$message = sprintf(
-			esc_html__( '%1$s only works with %2$s and requires %3$s to be installed and active.', 'buddypress-group-moderation' ),
-			'<strong>' . esc_html( $plugin_name ) . '</strong>',
-			'<strong>' . esc_html( $bp_plugin ) . '</strong>',
-			'<strong>' . esc_html( $bp_plugin ) . '</strong>'
-		);
 	}
 
-	echo '<div class="error"><p>' . wp_kses_post( $message ) . '</p></div>';
+	echo '<div class="notice notice-warning"><p>' . wp_kses_post( $message ) . '</p></div>';
 }
+add_action( 'admin_notices', 'bp_group_moderation_required_plugin_admin_notice' );
 
 /**
  * Redirects to the plugin settings page after activation.
@@ -179,14 +167,14 @@ function bp_group_moderation_required_plugin_admin_notice() {
  * @param string $plugin The plugin slug.
  */
 function bp_group_moderation_activation_redirect_settings( $plugin ) {
-    if ( is_multisite() ) {
-       return;
-    }
-   if ( plugin_basename( __FILE__ ) === $plugin && class_exists( 'BuddyPress' ) && bp_is_active( 'groups' ) && !isset( buddypress()->buddyboss ) ) {
-       if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'activate' && isset( $_REQUEST['plugin'] ) && $_REQUEST['plugin'] === $plugin ) { //phpcs:ignore
-           wp_redirect( admin_url( 'admin.php?page=bp-group-moderation' ) );
-           exit;
-       }
-   }
+	if ( is_multisite() ) {
+		return;
+	}
+	if ( plugin_basename( __FILE__ ) === $plugin && bp_group_moderation_requirements_met() ) {
+		if ( isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'activate' && isset( $_REQUEST['plugin'] ) && $_REQUEST['plugin'] === $plugin ) { //phpcs:ignore
+			wp_safe_redirect( admin_url( 'admin.php?page=bp-group-moderation' ) );
+			exit;
+		}
+	}
 }
 add_action( 'activated_plugin', 'bp_group_moderation_activation_redirect_settings' );

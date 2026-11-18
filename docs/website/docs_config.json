@@ -1,0 +1,13 @@
+{
+  "product": "BuddyPress Group Moderation",
+  "productType": "plugin",
+  "shortId": "bpgm",
+  "sections": [
+    { "name": "Getting Started", "folder": "getting-started", "description": "What the plugin does and how to install it." },
+    { "name": "Features", "folder": "features", "description": "The pending queue, approving and rejecting groups, and what members see." },
+    { "name": "Settings", "folder": "settings", "description": "Every option on the settings page and what it changes." },
+    { "name": "Developer Guide", "folder": "developer-guide", "description": "Filters, actions and stored data for extending the plugin." },
+    { "name": "FAQ", "folder": "faq", "description": "Short answers to common questions." },
+    { "name": "Troubleshooting", "folder": "troubleshooting", "description": "Fixes for common problems with pending groups and notifications." }
+  ]
+}

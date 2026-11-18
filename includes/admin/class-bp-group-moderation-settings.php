@@ -156,7 +156,7 @@ class BP_Group_Moderation_Settings {
 		$bgm_active   = $this->active_tab();
 		$bgm_page_url = admin_url( 'admin.php?page=' . self::MENU_SLUG );
 		$bgm_view     = BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/views/' . $bgm_active . '.php';
-		$bgm_pending  = BP_Group_Moderation_Admin::get_instance()->bp_group_moderation_get_pending_groups( 1, 1 )['total'];
+		$bgm_pending  = count( BP_Group_Moderation::bp_group_moderation_get_pending_group_ids() );
 
 		include BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/views/shell.php';
 	}

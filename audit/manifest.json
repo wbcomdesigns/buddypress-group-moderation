@@ -6,7 +6,7 @@
     "main_file": "buddypress-group-moderation.php",
     "text_domain": "buddypress-group-moderation",
     "requires_php": "8.1",
-    "scope": "single site; BuddyPress with the Groups component. Deactivates itself on BuddyBoss (bp_group_moderation_requires_buddypress).",
+    "scope": "single site; BuddyPress with the Groups component. Inert with an admin notice on BuddyBoss, without BuddyPress or with Groups off (bp_group_moderation_requirements_met(), checked on bp_include); never deactivates itself.",
     "licensed": "free: EDD updater in edd-license/ (store https://wbcomdesigns.com/) on the built-in key EDD_GROUP_MODERATION_FREE_LICENSE_KEY (edd-license/edd-plugin-license.php, set at build time; bin/build-release.sh fails while empty). Registered on init so cron/WP-CLI update checks work; no key, no updater. No licence UI, no stored key or status. Store side: the download id must be in wbcom_free_license_download_ids() (store free licence passthrough)."
   },
   "rest": {
@@ -22,9 +22,11 @@
       "capability": "manage_options",
       "params": [
         "action_type: approve|reject",
-        "group_id"
+        "group_id (absint)",
+        "reason (reject only, sanitize_textarea_field, max 500 chars, optional)"
       ],
-      "used_by": "assets/js/bp-group-moderation-admin.js (row Approve/Reject, Approve selected)"
+      "used_by": "assets/js/bp-group-moderation-admin.js (row Approve/Reject, Approve selected)",
+      "responses": "400 bad request, 403 no capability/nonce, 500 save failed; success with 'already approved or rejected' when the group is no longer pending"
     }
   ],
   "admin_pages": [
@@ -74,8 +76,8 @@
       "save_path": "options.php; sanitize callback merges the toggles over the stored option",
       "read_via": "bp_group_moderation_fetch_settings( $key ) in includes/bp-group-moderation-general-functions.php",
       "subkeys": {
-        "bp_group_moderation_auto_approve_admin": "bool, default true (activation)",
-        "bp_group_moderation_send_emails": "bool, default true (activation)",
+        "bp_group_moderation_auto_approve_admin": "bool, default true (applied by bp_group_moderation_fetch_settings via wp_parse_args, no activation write)",
+        "bp_group_moderation_send_emails": "bool, default true (applied by bp_group_moderation_fetch_settings via wp_parse_args, no activation write)",
         "bp_group_moderation_delete_data_on_uninstall": "bool, default false; read by uninstall.php"
       }
     },
@@ -92,7 +94,7 @@
     "requested_status": "visibility the creator asked for, applied on approve"
   },
   "user_meta": [
-    "bp_grp_moderation_rejected_group_{group_id}: group name, written when a decision email is sent"
+    "bp_grp_moderation_rejected_group_{group_id}: group name, written on every reject (read by the group_rejected notification formatter via secondary_item_id = creator)"
   ],
   "notifications": {
     "component": "groups",
@@ -101,16 +103,11 @@
       "group_approved",
       "group_rejected"
     ],
-    "mark_read_nonce": "bp_group_moderation_notification_nonce (_wp_nonce GET)"
+    "mark_read_nonce": "bp_group_moderation_notification_nonce (_wp_nonce GET)",
+    "mark_read": "BP_Group_Moderation_Notifications::bp_group_moderation_mark_read_from_request() on template_redirect and the Pending Groups page: nonce, then bp_notifications_check_notification_access() per id; by-type marking limited to the plugin's three actions",
+    "cleanup": "BuddyPress core deletes group notifications on groups_delete_group; approve deletes every admin's new_group_pending for the group; deactivation renames only these three actions to bp_mod_groups, activation restores them"
   },
-  "cron": [
-    {
-      "hook": "bp_group_moderation_hourly_check",
-      "schedule": "hourly",
-      "scheduled_at": "bp_loaded",
-      "cleared_at": "deactivation and uninstall"
-    }
-  ],
+  "cron": [],
   "tables": [],
   "hooks_fired": [
     {
@@ -139,7 +136,7 @@
     {
       "name": "bp_group_moderation_group_decision_mail",
       "type": "filter",
-      "args": "message, group, decision"
+      "args": "message, group, decision, reason"
     }
   ],
   "assets": {
@@ -156,8 +153,8 @@
     "licence_key_check": "bin/local-ci.sh step 4 warns when EDD_GROUP_MODERATION_FREE_LICENSE_KEY is empty; fails under BGM_RELEASE=1, which bin/build-release.sh sets"
   },
   "generated": {
-    "at": "2026-11-18",
-    "from": "manual scan of branch 1.0.1"
+    "at": "2026-11-19",
+    "from": "manual delta, 2nd team audit of branch 1.0.1"
   },
   "legacy_data": {
     "options": [
@@ -169,5 +166,45 @@
     ],
     "written_by": "1.0.0 only; nothing writes them now",
     "cleaned_by": "edd_group_moderation_remove_legacy_licence_data() on admin_init while either option exists, and uninstall.php when delete-on-uninstall is on"
+  },
+  "legacy_cron": "bp_group_moderation_hourly_check (1.0.0): unscheduled on load when present and on deactivation; the pending state is enforced by groups_group_before_save instead",
+  "hooks_consumed": [
+    {
+      "name": "groups_group_create_complete",
+      "use": "mark new group pending, force hidden, notify admins"
+    },
+    {
+      "name": "groups_group_before_save",
+      "use": "keep a pending group hidden; store a changed status as requested_status"
+    },
+    {
+      "name": "bp_get_new_group_status",
+      "use": "preselect the requested privacy on Manage > Settings (Nouveau)"
+    },
+    {
+      "name": "bp_get_group_type",
+      "use": "'Pending approval, requested: X' label"
+    },
+    {
+      "name": "bp_after_accept_invitation_parse_args",
+      "use": "refuse invitation accept for pending groups (profile, AJAX, REST)"
+    },
+    {
+      "name": "bp_after_has_groups_parse_args",
+      "use": "hide invites to pending groups from the invitee list"
+    },
+    {
+      "name": "bp_after_has_activities_parse_args",
+      "use": "exclude created_group/avatar/cover activity of pending groups (one query, cached)"
+    },
+    {
+      "name": "groups_delete_group",
+      "use": "flush the pending-ids cache"
+    }
+  ],
+  "cache": {
+    "group": "bp_group_moderation",
+    "key": "pending_ids",
+    "flushed": "on pending set, approve, reject, group delete"
   }
 }

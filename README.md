@@ -3,7 +3,7 @@
 **Author:** Wbcom Designs  
 **Version:** 1.0.1  
 **Requires at least:** WordPress 5.0, BuddyPress 5.0, PHP 8.1  
-**Tested up to:** WordPress 6.2, BuddyPress 11.0  
+**Tested up to:** WordPress 7.1, BuddyPress 14.5  
 **License:** GPL-2.0+
 
 ## Description
@@ -55,7 +55,7 @@ The plugin is free and needs no licence key. Updates come from the Wbcom Designs
 1. When a new group is created, you'll receive a notification and (optionally) an email
 2. Go to "Groups → Pending Groups" to see pending groups, 20 per page, with the pending count shown on the menu item
 3. Click "Approve" to approve the group with the originally requested visibility settings, or tick several rows and click "Approve selected"
-4. Click "Reject" to delete the group and notify the creator
+4. Click "Reject", optionally type a reason for the creator, then "Reject and delete group". Rejecting deletes the group and cannot be undone
 
 ### For Group Creators
 
@@ -63,6 +63,8 @@ The plugin is free and needs no licence key. Updates come from the Wbcom Designs
 2. You'll see a notice on your group page indicating that the group is pending approval, and your groups list labels it "Pending approval, requested: <type>".
 3. When your group is approved or rejected, you'll receive a notification and (optionally) an email.
 4. If approved, your group will be set to the visibility type you originally requested.
+5. While pending, changing the privacy in Manage > Settings changes the type applied on approval; the group stays hidden until then.
+6. Members you invite while creating the group see the invitation once the group is approved.
 
 ## Frequently Asked Questions
 
@@ -77,6 +79,10 @@ Yes, when a group is approved, it automatically receives the visibility type (pu
 ### Will pending groups appear in group directories?
 
 By default, pending groups are hidden from regular users in group directories and activity streams. Only the group creator and site administrators can see pending groups.
+
+### Does it work with BuddyBoss?
+
+No. On BuddyBoss, or with the Groups component off, the plugin does nothing and shows an admin notice.
 
 ## Changelog
 
