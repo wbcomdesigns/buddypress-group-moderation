@@ -4,6 +4,7 @@
  * Plugin URI: https://wbcomdesigns.com/plugins/buddypress-group-moderation
  * Description: Introduces a moderation system for BuddyPress groups, requiring admin approval for new groups before they become active.
  * Version: 1.0.0
+ * Requires PHP: 8.1
  * Author: Wbcom Designs
  * Author URI: https://wbcomdesigns.com
  * Text Domain: buddypress-group-moderation
@@ -39,8 +40,7 @@ include_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/bp-group-moderation-gene
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-admin.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-notifications.php';
-require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'admin/wbcom/wbcom-admin-settings.php';
-require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'admin/wbcom/wbcom-paid-plugin-settings.php';
+require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/class-bp-group-moderation-settings.php';
 /**
  * Plugin license integration for future updates
  */
@@ -55,6 +55,7 @@ function run_buddypress_group_moderation() {
 		BP_Group_Moderation::get_instance();
 		BP_Group_Moderation_Admin::get_instance();
 		BP_Group_Moderation_Notifications::get_instance();
+		( new BP_Group_Moderation_Settings() )->register();
 	}
 }
 
@@ -121,6 +122,9 @@ function bp_group_moderation_deactivate() {
 	foreach( $actions as $action ) {
 		$update_notification_component_name = $wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->prefix}bp_notifications SET component_name = %s WHERE component_action=%s", 'bp_mod_groups', $action ) );
 	}
+
+	// The hourly pending-status check is re-scheduled on bp_loaded when the plugin is active again.
+	wp_clear_scheduled_hook( 'bp_group_moderation_hourly_check' );
 }
 register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
 

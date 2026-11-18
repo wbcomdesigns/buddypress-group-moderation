@@ -2,7 +2,7 @@
 
 **Author:** Wbcom Designs  
 **Version:** 1.0.0  
-**Requires at least:** WordPress 5.0, BuddyPress 5.0  
+**Requires at least:** WordPress 5.0, BuddyPress 5.0, PHP 8.1  
 **Tested up to:** WordPress 6.2, BuddyPress 11.0  
 **License:** GPL-2.0+
 
@@ -25,19 +25,26 @@ BuddyPress Group Moderation introduces a moderation system for BuddyPress groups
 1. Upload the `buddypress-group-moderation` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Navigate to "Groups → Pending Groups" to view and manage pending groups
-4. Configure the plugin settings with the "Settings" link beside the Pending Groups page title, or under "WB Plugins → Group Moderation"
+4. Configure the plugin under "WB Plugins → Group Moderation" (the page opens on the General tab), or with the "Settings" link beside the Pending Groups page title
 
 ## Requirements
 
-- WordPress 5.0 or higher
+- WordPress 5.0 or higher, PHP 8.1 or higher
 - BuddyPress 5.0 or higher with the Groups component activated
 
 ## Configuration
 
-You can configure the plugin by navigating to Admin Menu "WB Plugins → Group Moderation". Available settings include:
+Go to "WB Plugins → Group Moderation". The page has three tabs and a "Pending Groups" button showing the pending count.
 
-- **Auto-approve admin groups**: When enabled, groups created by site administrators are automatically approved.
-- **Send email notifications**: When enabled, email notifications are sent in addition to BuddyPress on-site notifications.
+**General**
+
+- **Auto-approve admin groups**: groups created by site administrators go live at once.
+- **Send email notifications**: email administrators about new pending groups, and email creators when their group is approved or rejected, in addition to BuddyPress on-site notifications.
+- **Delete settings on uninstall**: off by default. When on, deleting the plugin also deletes its settings and licence key.
+
+**License**: enter and activate the licence key that keeps plugin updates coming.
+
+**Support**: frequently asked questions and links to the documentation and support team.
 
 ## Usage
 
@@ -71,9 +78,7 @@ By default, pending groups are hidden from regular users in group directories an
 
 ## Changelog
 
-### 1.0.0
-
-- Initial release
+See `readme.txt`.
 
 ## Credits
 

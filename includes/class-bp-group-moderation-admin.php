@@ -45,8 +45,6 @@ class BP_Group_Moderation_Admin {
 		
 		// AJAX handlers.
 		add_action( 'wp_ajax_bp_group_moderation_handle_group', array( $this, 'bp_group_moderation_ajax_handle_group' ) );
-
-		add_action( 'admin_menu', array( $this,'bp_group_moderation_add_plugin_settings_page' ) );
 	}
 
 	/**
@@ -64,91 +62,6 @@ class BP_Group_Moderation_Admin {
 		return '';
 	}
 
-
-	/**
-	 * Add admin sub menu for plugin settings.
-	 *
-	 * @since 1.0.0
-	 */
-	public function bp_group_moderation_add_plugin_settings_page() {			
-		if ( empty( $GLOBALS['admin_page_hooks']['wbcomplugins'] ) ) {
-
-			add_menu_page( esc_html__( 'WB Plugins', 'buddypress-group-moderation' ), esc_html__( 'WB Plugins', 'buddypress-group-moderation' ), 'manage_options', 'wbcomplugins', array( $this, 'bp_group_moderation_settings_page' ), 'dashicons-lightbulb', 59 );
-
-			add_submenu_page( 'wbcomplugins', esc_html__( 'General', 'buddypress-group-moderation' ), esc_html__( 'General', 'buddypress-group-moderation' ), 'manage_options', 'wbcomplugins' );
-		}
-		add_submenu_page( 'wbcomplugins', esc_html__( 'BuddyPress Group Moderation Settings Page', 'buddypress-group-moderation' ), esc_html__( 'Group Moderation', 'buddypress-group-moderation' ), 'manage_options', 'bp-group-moderation', array( $this, 'bp_group_moderation_settings_page' ) );
-	}
-
-	/**
-	 * Callable function for settings page.
-	 *
-	 * @since 1.0.0
-	 */
-	public function bp_group_moderation_settings_page() {
-		$current          = filter_input( INPUT_GET, 'tab' ) ? filter_input( INPUT_GET, 'tab' ) : 'general';
-		$group_mod_tabs = apply_filters(
-			'bp_group_moderation_admin_setting_tabs',
-			array(
-				'welcome'                => __( 'Welcome', 'buddypress-group-moderation' ),
-				'general'                => __( 'General', 'buddypress-group-moderation' ),
-				'support'                => __( 'Support', 'buddypress-group-moderation' ),
-			)
-		);
-		?>
-		<div class="wrap">
-			<div class="wbcom-bb-plugins-offer-wrapper">
-				<div id="wb_admin_logo">
-
-				</div>
-			</div>
-			<div class="wbcom-wrap bp-group-moderation-wrap">
-				<div class="blpro-header">
-					<div class="wbcom_admin_header-wrapper">
-						<div id="wb_admin_plugin_name">
-							<?php							
-								esc_html_e( 'BuddyPress Group Moderation', 'buddypress-group-moderation' );
-							?>
-							<span>
-							<?php
-								// translators: %s is replaced with the plugin version
-								printf( esc_html__( 'Version %s', 'buddypress-group-moderation' ), esc_html( BP_GROUP_MODERATION_VERSION ) );
-							?>
-							</span>
-						</div>
-						<?php echo do_shortcode( '[wbcom_admin_setting_header]' ); ?>
-					</div>
-				</div>
-				<div class="wbcom-admin-settings-page">
-					<div class="wbcom-tabs-section">
-						<div class="nav-tab-wrapper">
-							<div class="wb-responsive-menu">
-								<span><?php esc_html_e( 'Menu', 'buddypress-group-moderation' ); ?></span>
-								<input class="wb-toggle-btn" type="checkbox" id="wb-toggle-btn">
-								<label class="wb-toggle-icon" for="wb-toggle-btn">
-									<span class="wb-icon-bars"></span>
-								</label>
-							</div>
-							<ul>
-							<?php
-							foreach ( $group_mod_tabs as $group_mod_tab => $group_mod_name ) {
-								$class     = ( $group_mod_tab == $current ) ? 'nav-tab-active' : '';
-								$bp_group_moderation_nonce = wp_create_nonce( 'bp_group_moderation_nonce' );
-								echo '<li id="' . esc_attr( $group_mod_tab ) . '"><a class="nav-tab ' . esc_attr( $class ) . '" href="admin.php?page=bp-group-moderation&tab=' . esc_attr( $group_mod_tab ) . '&nonce=' . esc_attr( $bp_group_moderation_nonce ) . '">' . esc_html( $group_mod_name ) . '</a></li>';
-							}
-							?>
-							</ul>
-						</div>
-					</div>
-					<?php
-					include BP_GROUP_MODERATION_PLUGIN_DIR . 'admin/templates/bp-group_moderation-options-page.php';
-					do_action( 'bp_group_moderation_tab_contents' );
-					?>
-				</div>
-			</div> <!-- closing div class wbcom-wrap -->
-		</div> <!-- closing div class wrap -->
-		<?php
-	}
 
 	/**
 	 * Add admin menu for managing pending groups.
@@ -176,7 +89,7 @@ class BP_Group_Moderation_Admin {
 	 * @param string $hook The current admin page.
 	 */
 	public function bp_group_moderation_admin_enqueue_scripts( $hook ) {		
-		if ( strpos( $hook, 'bp-pending-groups' ) === false && strpos( $hook, 'bp-group-moderation' ) === false ) {
+		if ( strpos( $hook, 'bp-pending-groups' ) === false && strpos( $hook, 'bp-group-moderation' ) === false && 'toplevel_page_wbcomplugins' !== $hook ) {
 			return;
 		}
 

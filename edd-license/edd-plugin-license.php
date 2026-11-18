@@ -9,9 +9,23 @@ if ( ! defined( 'EDD_GROUP_MODERATION_ITEM_NAME' ) ) {
 	define( 'EDD_GROUP_MODERATION_ITEM_NAME', 'BuddyPress Group Moderation' ); // you should use your own CONSTANT name, and be sure to replace it throughout this file
 }
 
-// the name of the settings page for the license input to be displayed
+// the settings screen the license form lives on: the License tab of WB Plugins > Group Moderation
 if ( ! defined( 'EDD_GROUP_MODERATION_PLUGIN_LICENSE_PAGE' ) ) {
-	define( 'EDD_GROUP_MODERATION_PLUGIN_LICENSE_PAGE', 'wbcom-license-page' );
+	define( 'EDD_GROUP_MODERATION_PLUGIN_LICENSE_PAGE', 'bp-group-moderation&tab=license' );
+}
+
+/**
+ * Whether the current admin request is a screen that reads the license status from the store.
+ *
+ * @return bool
+ */
+function edd_group_moderation_is_license_screen() {
+	global $pagenow;
+	// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only screen check.
+	$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+	$tab  = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+	// phpcs:enable
+	return 'plugins.php' === $pagenow || 'index.php' === $pagenow || 'wbcom-license-page' === $page || ( 'bp-group-moderation' === $page && 'license' === $tab );
 }
 
 if ( ! class_exists( 'EDD_GROUP_MODERATION_PLUGIN_UPDATER' ) ) {
@@ -146,7 +160,7 @@ function edd_wbcom_group_moderation_activate_license() {
 			$base_url = admin_url( 'admin.php?page=' . EDD_GROUP_MODERATION_PLUGIN_LICENSE_PAGE );
 			$redirect = add_query_arg(
 				array(
-					'bp_stats_activation' => 'false',
+					'bgm_license_activation' => 'false',
 					'message'             => urlencode( $message ),
 				),
 				$base_url
@@ -214,7 +228,7 @@ function edd_wbcom_group_moderation_deactivate_license() {
 			$base_url = admin_url( 'admin.php?page=' . EDD_GROUP_MODERATION_PLUGIN_LICENSE_PAGE );
 			$redirect = add_query_arg(
 				array(
-					'bp_stats_activation' => 'false',
+					'bgm_license_activation' => 'false',
 					'message'             => urlencode( $message ),
 				),
 				$base_url
@@ -249,10 +263,7 @@ add_action( 'admin_init', 'edd_wbcom_group_moderation_deactivate_license' );
  *************************************/
 add_action( 'admin_init', 'edd_wbcom_group_moderation_check_license' );
 function edd_wbcom_group_moderation_check_license() {
-	global $wp_version, $pagenow;
-	
-	// phpcs:ignore WordPress.Security.NonceVerification
-	if ( $pagenow === 'plugins.php' || $pagenow === 'index.php' || ( isset( $_GET['page'] ) && $_GET['page'] === 'wbcom-license-page' ) ) {
+	if ( edd_group_moderation_is_license_screen() ) {
 
 		$license_data = get_transient( 'edd_wbcom_group_moderation_license_key_data' );
 		$license      = trim( get_option( 'edd_wbcom_group_moderation_license_key' ) );
@@ -293,7 +304,7 @@ function edd_wbcom_group_moderation_check_license() {
  * This is a means of catching errors from the activation method above and displaying it to the customer
  */
 function edd_wbcom_group_moderation_admin_notices() {
-	$license_activation = filter_input( INPUT_GET, 'bp_stats_activation' ) ? filter_input( INPUT_GET, 'bp_stats_activation' ) : '';
+	$license_activation = filter_input( INPUT_GET, 'bgm_license_activation' ) ? filter_input( INPUT_GET, 'bgm_license_activation' ) : '';
 	$error_message      = filter_input( INPUT_GET, 'message' ) ? filter_input( INPUT_GET, 'message' ) : '';
 	$license_data       = get_transient( 'edd_wbcom_group_moderation_license_key_data' );
 	$license            = trim( get_option( 'edd_wbcom_group_moderation_license_key' ) );
@@ -352,68 +363,55 @@ function edd_wbcom_group_moderation_admin_notices() {
 }
 add_action( 'admin_notices', 'edd_wbcom_group_moderation_admin_notices' );
 
-add_action( 'wbcom_add_plugin_license_code', 'wbcom_group_moderation_render_license_section' );
+/**
+ * Render the license form on the License tab of the settings screen.
+ */
 function wbcom_group_moderation_render_license_section() {
 
-	$license = get_option( 'edd_wbcom_group_moderation_license_key', true );
-	$status  = get_option( 'edd_wbcom_group_moderation_license_status' );
-
+	$license        = (string) get_option( 'edd_wbcom_group_moderation_license_key', '' );
+	$status         = get_option( 'edd_wbcom_group_moderation_license_status' );
 	$license_output = edd_group_moderation_active_license_message();
+	$remote_status  = ( is_array( $license_output ) && isset( $license_output['license_data']->license ) ) ? $license_output['license_data']->license : '';
+	$message        = is_array( $license_output ) ? $license_output['message'] : '';
 
-	if ( false !== $status && 'valid' === $status && ! empty( $license_output ) && $license_output['license_data']->license == 'valid' ) {
+	if ( 'valid' === $status && 'valid' === $remote_status ) {
 		$status_class = 'active';
-		$status_text  = 'Active';
-	} else if ( ! empty( $license_output ) && $license_output['license_data']->license != '' && $license_output['license_data']->license == 'expired' ) {
+		$status_text  = __( 'Active', 'buddypress-group-moderation' );
+	} elseif ( 'expired' === $remote_status ) {
 		$status_class = 'expired';
-		$status_text  = ucfirst( str_replace( '_', ' ', $license_output['license_data']->license ) );
-
-	} else if ( ! empty( $license_output ) && $license_output['license_data']->license != '' && $license_output['license_data']->license == 'invalid' ) {
+		$status_text  = __( 'Expired', 'buddypress-group-moderation' );
+	} elseif ( 'invalid' === $remote_status ) {
 		$status_class = 'invalid';
-		$status_text  = ucfirst( str_replace( '_', ' ', $license_output['license_data']->license ) );
-
+		$status_text  = __( 'Invalid', 'buddypress-group-moderation' );
 	} else {
 		$status_class = 'inactive';
-		$status_text  = 'Inactive';
+		$status_text  = __( 'Inactive', 'buddypress-group-moderation' );
 	}
 	?>
-	<table class="form-table wb-license-form-table mobile-license-headings">
-		<thead>
-			<tr>
-				<th class="wb-product-th"><?php esc_html_e( 'Product', 'buddypress-group-moderation' ); ?></th>
-				<th class="wb-version-th"><?php esc_html_e( 'Version', 'buddypress-group-moderation' ); ?></th>
-				<th class="wb-key-th"><?php esc_html_e( 'Key', 'buddypress-group-moderation' ); ?></th>
-				<th class="wb-status-th"><?php esc_html_e( 'Status', 'buddypress-group-moderation' ); ?></th>
-				<th class="wb-action-th"><?php esc_html_e( 'Action', 'buddypress-group-moderation' ); ?></th>
-				<th></th>
-			</tr>
-		</thead>
-	</table>
-	<form method="post" action="options.php">
-		<?php settings_fields( 'edd_wbcom_group_moderation_license' ); ?>
-		<table class="form-table wb-license-form-table">
-			<tr>
-				<td class="wb-plugin-name"><?php echo esc_html( EDD_GROUP_MODERATION_ITEM_NAME ); ?></td>
-				<td class="wb-plugin-version"><?php echo esc_html( BP_GROUP_MODERATION_VERSION ); ?></td>
-				<td class="wb-plugin-license-key">
-					<input id="edd_wbcom_group_moderation_license_key" name="edd_wbcom_group_moderation_license_key" type="text" class="regular-text" value="<?php esc_attr_e( $license, 'buddypress-group-moderation' ); ?>" />
-					<p><?php echo esc_html( $license_output['message'] ); ?></p>
-				</td>
-				<td class="wb-license-status <?php echo esc_attr( $status_class ); ?>"><?php esc_attr_e( $status_text, 'buddypress-group-moderation' ); ?></td>
-				<td class="wb-license-action">
-					<?php
-					if ( $status !== false && $status == 'valid' ) {
-						wp_nonce_field( 'edd_wbcom_group_moderation_nonce', 'edd_wbcom_group_moderation_nonce' );
-						?>
-						<input type="submit" class="button-secondary" name="edd_group_moderation_license_deactivate" value="<?php esc_attr_e( 'Deactivate License', 'buddypress-group-moderation' ); ?>"/>
-						<?php
-					} else {
-						wp_nonce_field( 'edd_wbcom_group_moderation_nonce', 'edd_wbcom_group_moderation_nonce' );
-						?>
-						<input type="submit" class="button-secondary" name="edd_group_moderation_license_activate" value="<?php esc_attr_e( 'Activate License', 'buddypress-group-moderation' ); ?>"/>
-					<?php } ?>
-				</td>
-			</tr>
-		</table>
+	<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+		<?php
+		settings_fields( 'edd_wbcom_group_moderation_license' );
+		wp_nonce_field( 'edd_wbcom_group_moderation_nonce', 'edd_wbcom_group_moderation_nonce' );
+		?>
+		<label class="bgm-field__label" for="edd_wbcom_group_moderation_license_key"><?php esc_html_e( 'License key', 'buddypress-group-moderation' ); ?></label>
+		<div class="bgm-license__row">
+			<input id="edd_wbcom_group_moderation_license_key" name="edd_wbcom_group_moderation_license_key" type="text" class="regular-text" value="<?php echo esc_attr( $license ); ?>" autocomplete="off" />
+			<span class="bgm-license__status bgm-license__status--<?php echo esc_attr( $status_class ); ?>"><?php echo esc_html( $status_text ); ?></span>
+			<?php if ( 'valid' === $status ) : ?>
+				<input type="submit" class="button button-secondary" name="edd_group_moderation_license_deactivate" value="<?php esc_attr_e( 'Deactivate License', 'buddypress-group-moderation' ); ?>"/>
+			<?php else : ?>
+				<input type="submit" class="button button-primary" name="edd_group_moderation_license_activate" value="<?php esc_attr_e( 'Activate License', 'buddypress-group-moderation' ); ?>"/>
+			<?php endif; ?>
+		</div>
+		<?php if ( $message ) : ?>
+			<p class="bgm-license__message"><?php echo esc_html( $message ); ?></p>
+		<?php endif; ?>
+		<p class="bgm-license__message">
+			<?php
+			/* translators: %s: plugin version. */
+			echo esc_html( sprintf( __( 'BuddyPress Group Moderation %s', 'buddypress-group-moderation' ), BP_GROUP_MODERATION_VERSION ) );
+			?>
+		</p>
 	</form>
 	<?php
 }
@@ -424,10 +422,7 @@ function wbcom_group_moderation_render_license_section() {
  * @return array $output store license data.
  */
 function edd_group_moderation_active_license_message() {
-	global $wp_version, $pagenow;
-	
-	// phpcs:ignore WordPress.Security.NonceVerification
-	if ( $pagenow === 'plugins.php' || $pagenow === 'index.php' || ( isset( $_GET['page'] ) && $_GET['page'] === 'wbcom-license-page' ) ) {
+	if ( edd_group_moderation_is_license_screen() ) {
 
 		$license_data = get_transient( 'edd_wbcom_group_moderation_license_key_data' );
 		$license      = trim( get_option( 'edd_wbcom_group_moderation_license_key' ) );
@@ -474,11 +469,11 @@ function edd_group_moderation_active_license_message() {
 				$expires = 'lifetime';
 			}
 
-			if ( $license_data->license == 'valid' ) {
+			if ( isset( $license_data->license ) && 'valid' === $license_data->license ) {
 				// Get site counts
 				$site_count    = $license_data->site_count;
 				$license_limit = $license_data->license_limit;
-				$message = 'License key is active.';
+				$message = __( 'License key is active.', 'buddypress-group-moderation' );
 				if ( isset( $expires ) && 'lifetime' != $expires ) {
 					$message .= sprintf( __( ' Expires %s.', 'buddypress-group-moderation' ), $expires ) . ' ';
 				}

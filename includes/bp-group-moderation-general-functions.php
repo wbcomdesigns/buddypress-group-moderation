@@ -23,11 +23,9 @@ if( ! function_exists( 'bp_group_moderation_fetch_settings' ) ) {
             return false;
         }
 
-        $bp_group_moderation_settings = !empty( get_option( 'bp_group_moderation_general_settings', true ) ) ? get_option( 'bp_group_moderation_general_settings', true ) : array();
+        $bp_group_moderation_settings = get_option( 'bp_group_moderation_general_settings', array() );
 
-        $bp_group_moderation_settings_value = !empty( $bp_group_moderation_settings ) ?  $bp_group_moderation_settings[ $setting_key ] : false;
-
-        return $bp_group_moderation_settings_value;
+        return is_array( $bp_group_moderation_settings ) && ! empty( $bp_group_moderation_settings[ $setting_key ] );
 
     }
 }
