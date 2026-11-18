@@ -84,10 +84,12 @@ function run_buddypress_group_moderation() {
 		BP_Group_Moderation::get_instance();
 		BP_Group_Moderation_Admin::get_instance();
 		BP_Group_Moderation_Notifications::get_instance();
-		( new BP_Group_Moderation_Settings() )->register();
 	}
 }
 add_action( 'bp_include', 'run_buddypress_group_moderation' );
+
+// The settings screen opens whatever the requirements; it explains what is missing instead of a dead end.
+( new BP_Group_Moderation_Settings() )->register();
 
 /**
  * Activation hook for the plugin.
@@ -124,9 +126,10 @@ register_deactivation_hook( __FILE__, 'bp_group_moderation_deactivate' );
 
 /**
  * Displays an admin notice indicating that BuddyPress and the group component are required.
+ * Also printed inside the settings screen, which hides other notices.
  */
 function bp_group_moderation_required_plugin_admin_notice() {
-	if ( ! current_user_can( 'activate_plugins' ) || bp_group_moderation_requirements_met() ) {
+	if ( ! current_user_can( 'manage_options' ) || bp_group_moderation_requirements_met() ) {
 		return;
 	}
 

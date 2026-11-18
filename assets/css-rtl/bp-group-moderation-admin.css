@@ -37,6 +37,18 @@
 }
 
 /* Action buttons */
+.bp-group-moderation-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-block: 12px;
+}
+
+.bp-group-moderation-filters input[type="search"] {
+    min-width: 220px;
+}
+
 .bp-group-moderation-actions {
     display: flex;
     flex-wrap: wrap;
@@ -378,6 +390,13 @@
 }
 
 @media screen and (max-width: 782px) {
+    .bp-group-moderation-filters input[type="search"],
+    .bp-group-moderation-filters select {
+        flex: 1 1 100%;
+        min-width: 0;
+        max-width: none;
+    }
+
     /* Pending Groups: one card per group, each cell labelled. */
     .bp-group-moderation-table thead {
         display: none;

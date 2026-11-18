@@ -26,7 +26,7 @@
         "reason (reject only, sanitize_textarea_field, max 500 chars, optional)"
       ],
       "used_by": "assets/js/bp-group-moderation-admin.js (row Approve/Reject, Approve selected)",
-      "responses": "400 bad request, 403 no capability/nonce, 500 save failed; success with 'already approved or rejected' when the group is no longer pending"
+      "responses": "400 bad request, 403 no capability/nonce, 500 save failed; success with 'already approved or rejected' when the group is no longer pending; success data includes pending (int) and pendingText for the menu badge and list total"
     }
   ],
   "admin_pages": [
@@ -37,7 +37,7 @@
       "capability": "manage_options",
       "hook": "bp_admin_menu",
       "callback": "BP_Group_Moderation_Admin::bp_group_moderation_admin_page_content",
-      "note": "20 per page (paged GET), pending count bubble on the menu item"
+      "note": "20 per page (paged GET), name search (s) and newest/oldest sort (order=desc|asc), pending count bubble on the menu item updated after each AJAX decision"
     },
     {
       "slug": "wbcomplugins",
@@ -104,7 +104,7 @@
       "group_rejected"
     ],
     "mark_read_nonce": "bp_group_moderation_notification_nonce (_wp_nonce GET)",
-    "mark_read": "BP_Group_Moderation_Notifications::bp_group_moderation_mark_read_from_request() on template_redirect and the Pending Groups page: nonce, then bp_notifications_check_notification_access() per id; by-type marking limited to the plugin's three actions",
+    "mark_read": "BP_Group_Moderation_Notifications::bp_group_moderation_mark_read_from_request() on template_redirect and load-<Pending Groups hook>: nonce, bp_notifications_check_notification_access(), then BP_Notifications_Notification::update() scoped to id + user_id; by-type marking limited to the plugin's three actions",
     "cleanup": "BuddyPress core deletes group notifications on groups_delete_group; approve deletes every admin's new_group_pending for the group; deactivation renames only these three actions to bp_mod_groups, activation restores them"
   },
   "cron": [],
@@ -137,6 +137,11 @@
       "name": "bp_group_moderation_group_decision_mail",
       "type": "filter",
       "args": "message, group, decision, reason"
+    },
+    {
+      "name": "bp_group_moderation_hold_new_group",
+      "type": "filter",
+      "args": "bool hold, BP_Groups_Group group"
     }
   ],
   "assets": {
@@ -170,8 +175,12 @@
   "legacy_cron": "bp_group_moderation_hourly_check (1.0.0): unscheduled on load when present and on deactivation; the pending state is enforced by groups_group_before_save instead",
   "hooks_consumed": [
     {
+      "name": "groups_create_group",
+      "use": "hold every new group (create screen, REST, CLI, other plugins): requested_status, approval_status=pending, hidden; notify admins unless on the create screen"
+    },
+    {
       "name": "groups_group_create_complete",
-      "use": "mark new group pending, force hidden, notify admins"
+      "use": "create screen finished: notify admins of the pending group (once)"
     },
     {
       "name": "groups_group_before_save",
@@ -200,11 +209,21 @@
     {
       "name": "groups_delete_group",
       "use": "flush the pending-ids cache"
+    },
+    {
+      "name": "bp_after_groups_invite_user_parse_args",
+      "use": "invite to a pending group is created as a draft (send_invite=0)"
+    },
+    {
+      "name": "bp_after_groups_send_invitation_parse_args",
+      "use": "groups_send_invites() for a pending group sends nothing; approval sends the drafts"
     }
   ],
   "cache": {
     "group": "bp_group_moderation",
     "key": "pending_ids",
     "flushed": "on pending set, approve, reject, group delete"
-  }
+  },
+  "approve_side_effects": "hide_sitewide cleared on created_group/avatar/cover activity when approved public; held draft invitations sent (BP notification + email)",
+  "settings_screen": "registered unconditionally (main file); with requirements unmet it renders the requirements notice and hides the Pending Groups button"
 }

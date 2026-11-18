@@ -4,11 +4,11 @@
 
 Go to **Groups > Pending Groups** in your WordPress admin. The menu item shows how many groups are waiting.
 
-The queue lists 20 groups per page, newest first, with the group name, its creator, when it was created and the type the creator asked for. The settings page has a **Pending Groups** button with the same count.
+The queue lists 20 groups per page with the group name, its creator, when it was created and the type the creator asked for. Search by group name, and sort newest or oldest first, with the bar above the list. The settings page has a **Pending Groups** button with the same count, and both counts update after each approve or reject.
 
 ## Approve a group
 
-Click **Approve** in the group's row. The group gets the type its creator asked for (public, private or hidden), the row disappears and the creator gets an on-site notification and an email.
+Click **Approve** in the group's row. The group gets the type its creator asked for (public, private or hidden), the row disappears and the creator gets an on-site notification and an email. Invitations the creator sent while the group was pending go out at this point.
 
 To approve several groups at once, tick them and click **Approve selected**. Clicking it with nothing ticked shows "Tick at least one group to approve."
 

@@ -4,7 +4,8 @@
 
 ## New groups go live without waiting
 
-- Check **Settings > BuddyPress > Components**: Groups must be on. With it off, the plugin shows a notice and does nothing.
+- Check **Settings > BuddyPress > Components**: Groups must be on. With it off, the plugin shows a notice and does nothing; its settings page still opens and says so.
+- A plugin can skip moderation for groups it creates for its own records with the `bp_group_moderation_hold_new_group` filter.
 - Groups created by administrators go live at once while **Auto-approve admin groups** is on.
 
 ## Nobody gets emails

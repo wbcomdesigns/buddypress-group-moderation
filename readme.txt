@@ -22,6 +22,7 @@ Settings live under WB Plugins > Group Moderation, with General and Support tabs
 
 * New      - Reject opens a confirm inside the row with an optional reason, and the reason is included in the email to the group creator.
 * New      - Approve selected approves every ticked group on the Pending Groups page.
+* New      - Pending Groups has a group name search and a newest or oldest first sort.
 * New      - Opt-in setting to delete the plugin settings when the plugin is deleted, off by default.
 * Improve  - Settings open on a General and Support panel with a Pending Groups shortcut and the pending count.
 * Improve  - Plugin updates arrive on a built-in free licence key, with no licence key to enter or activate.
@@ -31,9 +32,13 @@ Settings live under WB Plugins > Group Moderation, with General and Support tabs
 * Improve  - With the Groups component off, or on BuddyBoss, the plugin stays active and shows a notice instead of deactivating itself.
 * Improve  - Settings fall back to their defaults when nothing is saved: auto-approve admin groups on, emails on, delete on uninstall off.
 * Improve  - Pending groups are found with one query and cached, instead of one query per group.
+* Improve  - The pending count on the menu and the list updates after each approve or reject, without a reload.
+* Improve  - The settings page opens with the Groups component off and says what is missing.
 * Fix      - Approving a group no longer fails with "An error occurred" and gives the group the type its creator asked for.
 * Fix      - The creator of a pending group could make it public from Manage > Settings before approval.
-* Fix      - Members invited while the group was being created could join it before approval; the invitation now waits for approval.
+* Fix      - Groups created through the BuddyPress REST API or by another plugin went live without approval.
+* Fix      - Members invited to a pending group could join it before approval; the invitation, its notification and its email now wait for approval.
+* Fix      - Opening the approved or pending notification link from a group page or Pending Groups did not mark it read.
 * Fix      - The rejected-group notification showed a blank group name when emails were off.
 * Fix      - The Pending Groups page was blank when opened from an expired notification link.
 * Fix      - Notifications about a deleted group are removed with the group, and approval removes the pending notifications of every administrator.
@@ -43,6 +48,7 @@ Settings live under WB Plugins > Group Moderation, with General and Support tabs
 * Security - A member could mark another member's notifications as read by changing the id in the link.
 * Security - Removed leftover developer tools: the hidden group status actions, the debug info view and the silenced errors in the approve/reject request.
 * Dev      - bp_group_moderation_group_decision_mail passes the reject reason as a fourth argument.
+* Dev      - New filter bp_group_moderation_hold_new_group lets a plugin skip moderation for groups it creates for its own records.
 * Dev      - The plugin header declares Requires PHP 8.1.
 * Dev      - Removed the never-fired bp_group_moderation_verify_status hook, three filters on hooks BuddyPress never fires, and a dead settings branch on the Pending Groups page.
 * Dev      - Removed the licence screen, notices and stored licence options; the key is the EDD_GROUP_MODERATION_FREE_LICENSE_KEY constant and old licence data is deleted on the next admin page load.

@@ -12,7 +12,8 @@
 ## Other members
 
 - A pending group does not appear in the groups directory, in activity streams, or in search.
-- Members the creator invited while setting the group up do not see the invitation until the group is approved. It then appears under **Groups > Invitations** and can be accepted as usual. Accepting before approval is refused.
+- Every new group waits, whether it was made on the Create a Group screen, through the BuddyPress REST API, or by another plugin.
+- Members the creator invites while the group is pending get no notification or email yet. The invitation is sent when the group is approved, then appears under **Groups > Invitations** and can be accepted as usual. Accepting before approval is refused.
 
 ## Site administrators
 

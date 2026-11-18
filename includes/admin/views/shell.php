@@ -8,6 +8,7 @@
  * @var string $bgm_active   Active tab slug.
  * @var string $bgm_page_url Settings page URL.
  * @var string $bgm_view     Absolute path of the active tab view.
+ * @var bool   $bgm_ready    BuddyPress with Groups is running (else the Pending Groups screen does not exist).
  * @var int    $bgm_pending  Pending group count.
  *
  * @package BuddyPress_Group_Moderation
@@ -31,10 +32,12 @@ $bgm_icons = array(
 			</div>
 		</div>
 		<div class="bgm-page-header__actions">
+			<?php if ( $bgm_ready ) : ?>
 			<a class="bgm-btn bgm-btn--secondary" href="<?php echo esc_url( admin_url( 'admin.php?page=bp-pending-groups' ) ); ?>">
 				<?php esc_html_e( 'Pending Groups', 'buddypress-group-moderation' ); ?>
 				<span class="bgm-count"><?php echo esc_html( number_format_i18n( $bgm_pending ) ); ?></span>
 			</a>
+			<?php endif; ?>
 			<span class="bgm-version-pill">
 				<?php
 				/* translators: %s: plugin version. */
@@ -44,6 +47,7 @@ $bgm_icons = array(
 		</div>
 	</header>
 	<hr class="wp-header-end">
+	<?php bp_group_moderation_required_plugin_admin_notice(); ?>
 
 	<div class="bgm-layout">
 		<nav class="bgm-sidebar" aria-label="<?php esc_attr_e( 'Group Moderation settings', 'buddypress-group-moderation' ); ?>">

@@ -23,12 +23,28 @@
 			return;
 		}
 		if ($('.tablenav-pages .page-numbers').length) {
-			// More pending groups on other pages: reload to pull the next batch in.
-			window.location.reload();
+			// More pending groups on other pages: reload page one to pull them in.
+			var url = new URL(window.location.href);
+			url.searchParams.delete('paged');
+			window.location.assign(url.toString());
 			return;
 		}
 		$('.bp-group-moderation-table, .tablenav.top').remove();
 		$('.bp-group-moderation-no-items').prop('hidden', false);
+	}
+
+	// Keep the menu badge and the list total in step with the server after each decision.
+	function updateCounts(data) {
+		if (!data || typeof data.pending !== 'number') {
+			return;
+		}
+		var $badge = $('#adminmenu a[href$="page=bp-pending-groups"] .awaiting-mod');
+		if (data.pending > 0) {
+			$badge.attr('class', 'awaiting-mod count-' + data.pending).find('.pending-count').text(data.pending);
+		} else {
+			$badge.remove();
+		}
+		$('.tablenav-pages .displaying-num').text(data.pendingText);
 	}
 
 	function setBusy($row, busy) {
@@ -53,6 +69,7 @@
 		}).done(function (response) {
 			if (response && response.success) {
 				notice('success', response.data.message);
+				updateCounts(response.data);
 				$row.fadeOut(300, function () {
 					$(this).remove();
 					afterRowRemoved();

@@ -9,16 +9,16 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-11-18T22:01:56+00:00\n"
+"POT-Creation-Date: 2026-11-18T23:10:29+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: buddypress-group-moderation\n"
 
 #. Plugin Name of the plugin
 #: buddypress-group-moderation.php
-#: buddypress-group-moderation.php:133
-#: includes/admin/class-bp-group-moderation-settings.php:84
-#: includes/admin/views/shell.php:29
+#: buddypress-group-moderation.php:136
+#: includes/admin/class-bp-group-moderation-settings.php:86
+#: includes/admin/views/shell.php:30
 msgid "BuddyPress Group Moderation"
 msgstr ""
 
@@ -46,28 +46,28 @@ msgstr ""
 msgid "BuddyPress Group Moderation: the update files (edd-license folder) are missing, so automatic updates are off. Please reinstall the plugin from wbcomdesigns.com."
 msgstr ""
 
-#: buddypress-group-moderation.php:134
+#: buddypress-group-moderation.php:137
 msgid "BuddyPress"
 msgstr ""
 
-#: buddypress-group-moderation.php:135
+#: buddypress-group-moderation.php:138
 msgid "Groups Component"
 msgstr ""
 
 #. translators: 1: plugin name, 2: BuddyPress.
-#: buddypress-group-moderation.php:140
+#: buddypress-group-moderation.php:143
 #, php-format
 msgid "%1$s requires %2$s to be installed and active."
 msgstr ""
 
 #. translators: 1: plugin name, 2: BuddyPress.
-#: buddypress-group-moderation.php:147
+#: buddypress-group-moderation.php:150
 #, php-format
 msgid "%1$s works with %2$s only and does nothing on BuddyBoss."
 msgstr ""
 
 #. translators: 1: plugin name, 2: Groups Component.
-#: buddypress-group-moderation.php:154
+#: buddypress-group-moderation.php:157
 #, php-format
 msgid "%1$s requires the %2$s to be enabled in the BuddyPress settings."
 msgstr ""
@@ -90,20 +90,20 @@ msgstr ""
 msgid "Error"
 msgstr ""
 
-#: includes/admin/class-bp-group-moderation-settings.php:70
+#: includes/admin/class-bp-group-moderation-settings.php:72
 msgid "General"
 msgstr ""
 
-#: includes/admin/class-bp-group-moderation-settings.php:71
+#: includes/admin/class-bp-group-moderation-settings.php:73
 msgid "Support"
 msgstr ""
 
-#: includes/admin/class-bp-group-moderation-settings.php:81
+#: includes/admin/class-bp-group-moderation-settings.php:83
 #: includes/admin/views/hub.php:29
 msgid "WB Plugins"
 msgstr ""
 
-#: includes/admin/class-bp-group-moderation-settings.php:84
+#: includes/admin/class-bp-group-moderation-settings.php:86
 msgid "Group Moderation"
 msgstr ""
 
@@ -151,24 +151,24 @@ msgstr ""
 msgid "Open settings"
 msgstr ""
 
-#: includes/admin/views/shell.php:30
+#: includes/admin/views/shell.php:31
 msgid "New groups wait for an administrator to approve them before members can see them."
 msgstr ""
 
-#: includes/admin/views/shell.php:35
-#: includes/class-bp-group-moderation-admin.php:55
-#: includes/class-bp-group-moderation-admin.php:62
-#: includes/class-bp-group-moderation-admin.php:328
+#: includes/admin/views/shell.php:37
+#: includes/class-bp-group-moderation-admin.php:54
+#: includes/class-bp-group-moderation-admin.php:61
+#: includes/class-bp-group-moderation-admin.php:380
 msgid "Pending Groups"
 msgstr ""
 
 #. translators: %s: plugin version.
-#: includes/admin/views/shell.php:41
+#: includes/admin/views/shell.php:44
 #, php-format
 msgid "Version %s"
 msgstr ""
 
-#: includes/admin/views/shell.php:49
+#: includes/admin/views/shell.php:53
 msgid "Group Moderation settings"
 msgstr ""
 
@@ -234,50 +234,59 @@ msgstr ""
 msgid "Send Feedback"
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:103
+#: includes/class-bp-group-moderation-admin.php:110
 msgid "Processing..."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:104
+#: includes/class-bp-group-moderation-admin.php:111
 msgid "The request could not be completed. Reload the page and try again."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:105
+#: includes/class-bp-group-moderation-admin.php:112
 msgid "Tick at least one group to approve."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:117
+#: includes/class-bp-group-moderation-admin.php:124
 msgid "You do not have permission to perform this action."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:125
+#: includes/class-bp-group-moderation-admin.php:132
 msgid "Invalid request."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:132
+#: includes/class-bp-group-moderation-admin.php:140
 msgid "This group was already approved or rejected."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:140
+#: includes/class-bp-group-moderation-admin.php:150
 msgid "Group approved successfully."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:143
+#: includes/class-bp-group-moderation-admin.php:153
 msgid "Group has been rejected."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:150
+#: includes/class-bp-group-moderation-admin.php:160
 msgid "An error occurred while processing the request."
 msgstr ""
 
+#. translators: %s: number of pending groups.
+#: includes/class-bp-group-moderation-admin.php:174
+#: includes/class-bp-group-moderation-admin.php:410
+#, php-format
+msgid "%s pending group"
+msgid_plural "%s pending groups"
+msgstr[0] ""
+msgstr[1] ""
+
 #. translators: %s: group name.
-#: includes/class-bp-group-moderation-admin.php:254
+#: includes/class-bp-group-moderation-admin.php:305
 #, php-format
 msgid "Your Group Has Been Approved : %s"
 msgstr ""
 
 #. translators: 1: member name, 2: group name, 3: group URL, 4: group URL as text, 5: site name.
-#: includes/class-bp-group-moderation-admin.php:257
+#: includes/class-bp-group-moderation-admin.php:308
 #, php-format
 msgid ""
 "<p><strong>Dear %1$s</strong></p>\n"
@@ -291,19 +300,19 @@ msgid ""
 msgstr ""
 
 #. translators: %s: the administrator's reason for rejecting the group.
-#: includes/class-bp-group-moderation-admin.php:278
+#: includes/class-bp-group-moderation-admin.php:329
 #, php-format
 msgid "<strong>Reason from the moderation team:</strong> %s"
 msgstr ""
 
 #. translators: %s: group name.
-#: includes/class-bp-group-moderation-admin.php:282
+#: includes/class-bp-group-moderation-admin.php:333
 #, php-format
 msgid "Group Submission Not Approved : %s"
 msgstr ""
 
 #. translators: 1: member name, 2: group name, 3: reason paragraph (may be empty), 4: site name.
-#: includes/class-bp-group-moderation-admin.php:285
+#: includes/class-bp-group-moderation-admin.php:336
 #, php-format
 msgid ""
 "<p><strong>Dear %1$s</strong></p>\n"
@@ -316,95 +325,119 @@ msgid ""
 "\t\t\t\t\t<p><strong>The %4$s Team</strong></p>"
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:324
+#: includes/class-bp-group-moderation-admin.php:376
 msgid "The group is deleted. This cannot be undone. The reason is sent in the email to the creator."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:325
+#: includes/class-bp-group-moderation-admin.php:377
 msgid "The group is deleted. This cannot be undone. Email notifications are off, so the creator only gets the on-site notification, without the reason."
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:329
+#: includes/class-bp-group-moderation-admin.php:381
 msgid "Settings"
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:337
-msgid "Approve selected"
-msgstr ""
-
-#. translators: %s: number of pending groups.
-#: includes/class-bp-group-moderation-admin.php:343
-#, php-format
-msgid "%s pending group"
-msgid_plural "%s pending groups"
-msgstr[0] ""
-msgstr[1] ""
-
-#: includes/class-bp-group-moderation-admin.php:366
-msgid "Select all pending groups"
-msgstr ""
-
-#: includes/class-bp-group-moderation-admin.php:367
-#: includes/class-bp-group-moderation-admin.php:382
-msgid "Group Name"
-msgstr ""
-
-#: includes/class-bp-group-moderation-admin.php:368
-#: includes/class-bp-group-moderation-admin.php:385
-msgid "Creator"
-msgstr ""
-
-#: includes/class-bp-group-moderation-admin.php:369
-#: includes/class-bp-group-moderation-admin.php:392
-msgid "Created"
-msgstr ""
-
-#: includes/class-bp-group-moderation-admin.php:370
-#: includes/class-bp-group-moderation-admin.php:393
-msgid "Requested Type"
-msgstr ""
-
-#: includes/class-bp-group-moderation-admin.php:371
-#: includes/class-bp-group-moderation-admin.php:394
-msgid "Actions"
+#: includes/class-bp-group-moderation-admin.php:388
+msgid "Search pending groups"
 msgstr ""
 
 #: includes/class-bp-group-moderation-admin.php:389
-msgid "Deleted user"
+msgid "Group name"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:390
+msgid "Sort pending groups"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:392
+msgid "Newest first"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:393
+msgid "Oldest first"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:395
+msgid "Filter"
 msgstr ""
 
 #: includes/class-bp-group-moderation-admin.php:397
-msgid "Approve"
-msgstr ""
-
-#: includes/class-bp-group-moderation-admin.php:400
-msgid "Reject"
+msgid "Clear search"
 msgstr ""
 
 #: includes/class-bp-group-moderation-admin.php:404
+msgid "Approve selected"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:433
+msgid "Select all pending groups"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:434
+#: includes/class-bp-group-moderation-admin.php:449
+msgid "Group Name"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:435
+#: includes/class-bp-group-moderation-admin.php:452
+msgid "Creator"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:436
+#: includes/class-bp-group-moderation-admin.php:459
+msgid "Created"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:437
+#: includes/class-bp-group-moderation-admin.php:460
+msgid "Requested Type"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:438
+#: includes/class-bp-group-moderation-admin.php:461
+msgid "Actions"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:456
+msgid "Deleted user"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:464
+msgid "Approve"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:467
+msgid "Reject"
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:471
 msgid "Reason for the creator (optional)"
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:408
+#: includes/class-bp-group-moderation-admin.php:475
 msgid "Reject and delete group"
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:409
+#: includes/class-bp-group-moderation-admin.php:476
 msgid "Cancel"
 msgstr ""
 
-#: includes/class-bp-group-moderation-admin.php:419
+#: includes/class-bp-group-moderation-admin.php:486
+msgid "No pending groups match your search."
+msgstr ""
+
+#: includes/class-bp-group-moderation-admin.php:486
 msgid "No pending groups found."
 msgstr ""
 
 #. translators: %s: group name.
-#: includes/class-bp-group-moderation-notifications.php:118
+#: includes/class-bp-group-moderation-notifications.php:119
 #, php-format
 msgid "New group \"%s\" is pending approval."
 msgstr ""
 
 #. translators: %d: number of pending groups.
-#: includes/class-bp-group-moderation-notifications.php:120
+#: includes/class-bp-group-moderation-notifications.php:121
 #, php-format
 msgid "%d new group is pending approval."
 msgid_plural "%d new groups are pending approval."
@@ -412,13 +445,13 @@ msgstr[0] ""
 msgstr[1] ""
 
 #. translators: %s: group name.
-#: includes/class-bp-group-moderation-notifications.php:177
+#: includes/class-bp-group-moderation-notifications.php:188
 #, php-format
 msgid "Your group \"%s\" has been approved."
 msgstr ""
 
 #. translators: %s: group name.
-#: includes/class-bp-group-moderation-notifications.php:233
+#: includes/class-bp-group-moderation-notifications.php:256
 #, php-format
 msgid "Your group \"%s\" was not approved by the site administrators."
 msgstr ""
@@ -435,24 +468,24 @@ msgstr ""
 msgid "Hidden"
 msgstr ""
 
-#: includes/class-bp-group-moderation.php:213
+#: includes/class-bp-group-moderation.php:218
 msgid "Pending approval"
 msgstr ""
 
 #. translators: %s: group type the creator requested (Public, Private or Hidden).
-#: includes/class-bp-group-moderation.php:217
+#: includes/class-bp-group-moderation.php:222
 #, php-format
 msgid "Pending approval, requested: %s"
 msgstr ""
 
 #. translators: %s: group name.
-#: includes/class-bp-group-moderation.php:333
+#: includes/class-bp-group-moderation.php:417
 #, php-format
 msgid "New Group Pending Approval : %s"
 msgstr ""
 
 #. translators: 1: group name, 2: creator name, 3: group URL, 4: group URL as text, 5: Pending Groups URL, 6: Pending Groups URL as text.
-#: includes/class-bp-group-moderation.php:336
+#: includes/class-bp-group-moderation.php:420
 #, php-format
 msgid ""
 "<p><strong>Hello Admin</strong></p>\n"
@@ -465,6 +498,6 @@ msgid ""
 "\t\t\t<p><strong>Thank you for keeping our community safe and welcoming!</strong></p>"
 msgstr ""
 
-#: includes/class-bp-group-moderation.php:401
+#: includes/class-bp-group-moderation.php:485
 msgid "Your group is currently awaiting approval from a site administrator. You will be notified once it has been approved."
 msgstr ""

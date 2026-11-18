@@ -314,8 +314,16 @@ class BP_Group_Moderation_Notifications {
 		// phpcs:enable
 
 		if ( $notification_id ) {
+			// bp_notifications_mark_notification() checks the displayed user, who is nobody on a group
+			// page or in wp-admin; mark it for the signed-in owner directly (the where clause scopes it too).
 			if ( bp_notifications_check_notification_access( $user_id, $notification_id ) ) {
-				bp_notifications_mark_notification( $notification_id, false );
+				BP_Notifications_Notification::update(
+					array( 'is_new' => 0 ),
+					array(
+						'id'      => $notification_id,
+						'user_id' => $user_id,
+					)
+				);
 			}
 		} elseif ( in_array( $action, array( 'new_group_pending', 'group_approved', 'group_rejected' ), true ) ) {
 			bp_notifications_mark_notifications_by_type( $user_id, 'groups', $action );

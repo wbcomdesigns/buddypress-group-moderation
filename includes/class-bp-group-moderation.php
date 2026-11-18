@@ -165,7 +165,10 @@ class BP_Group_Moderation {
 	 * Initialize the plugin components.
 	 */
 	public function bp_group_moderation_init() {
-		add_action( 'groups_group_create_complete', array( $this, 'bp_group_moderation_set_group_to_pending' ), 20, 1 );
+		// Every new group, from the create screen, REST, CLI or another plugin (groups_create_group() fires this once per new group).
+		add_action( 'groups_create_group', array( $this, 'bp_group_moderation_set_group_to_pending' ), 10, 3 );
+		// The create screen makes the group at its first step; admins hear about it once the creator finishes.
+		add_action( 'groups_group_create_complete', array( $this, 'bp_group_moderation_create_screen_complete' ), 20 );
 
 		// Every save of a pending group, from any screen or API, keeps it hidden.
 		add_action( 'groups_group_before_save', array( $this, 'bp_group_moderation_keep_pending_hidden' ) );
@@ -179,6 +182,8 @@ class BP_Group_Moderation {
 		// Invitations to a pending group wait for approval.
 		add_filter( 'bp_after_accept_invitation_parse_args', array( $this, 'bp_group_moderation_hold_invitation_accept' ) );
 		add_filter( 'bp_after_has_groups_parse_args', array( $this, 'bp_group_moderation_hide_pending_invites' ) );
+		add_filter( 'bp_after_groups_invite_user_parse_args', array( $this, 'bp_group_moderation_hold_invite_send' ) );
+		add_filter( 'bp_after_groups_send_invitation_parse_args', array( $this, 'bp_group_moderation_hold_invites_send' ) );
 
 		// A deleted group leaves the pending list.
 		add_action( 'groups_delete_group', array( __CLASS__, 'bp_group_moderation_flush_pending_ids' ) );
@@ -218,15 +223,17 @@ class BP_Group_Moderation {
 	}
 
 	/**
-	 * On a pending group's Manage > Settings screen, preselect the requested privacy (Nouveau reads
+	 * On a pending group's Manage > Settings screen and the create screen's Settings step, preselect
+	 * the requested privacy (Nouveau reads
 	 * bp_get_new_group_status() for the radios).
 	 *
 	 * @param string $status Group status.
 	 * @return string
 	 */
 	public function bp_group_moderation_settings_screen_status( $status ) {
-		$group = groups_get_current_group();
-		if ( 'hidden' !== $status || empty( $group->id ) || ! bp_is_group_admin_page() || ! bp_is_group_admin_screen( 'group-settings' ) || ! self::bp_group_moderation_is_pending( $group->id ) ) {
+		$group           = groups_get_current_group();
+		$settings_screen = bp_is_group_create() || ( bp_is_group_admin_page() && bp_is_group_admin_screen( 'group-settings' ) );
+		if ( 'hidden' !== $status || empty( $group->id ) || ! $settings_screen || ! self::bp_group_moderation_is_pending( $group->id ) ) {
 			return $status;
 		}
 
@@ -288,17 +295,80 @@ class BP_Group_Moderation {
 	}
 
 	/**
-	 * Set a newly created group to pending status.
+	 * Invitations to a pending group are kept as drafts (no notification, no email) until approval.
 	 *
-	 * @param int $group_id The group id.
+	 * @param array $args groups_invite_user() args.
+	 * @return array
 	 */
-	public function bp_group_moderation_set_group_to_pending( $group_id ) {
-		$group = groups_get_group( $group_id );
+	public function bp_group_moderation_hold_invite_send( $args ) {
+		if ( ! empty( $args['group_id'] ) && self::bp_group_moderation_is_pending( (int) $args['group_id'] ) ) {
+			$args['send_invite'] = 0;
+		}
+		return $args;
+	}
+
+	/**
+	 * Sending a pending group's draft invitations sends nothing; approval sends them.
+	 *
+	 * @param array $args groups_send_invites() args.
+	 * @return array
+	 */
+	public function bp_group_moderation_hold_invites_send( $args ) {
+		if ( ! empty( $args['group_id'] ) && self::bp_group_moderation_is_pending( (int) $args['group_id'] ) ) {
+			$args['user_id'] = array( 0 ); // Matches no invitee, so no draft is sent.
+		}
+		return $args;
+	}
+
+	/**
+	 * Send the invitations held while the group was pending. Called on approval.
+	 *
+	 * @param int $group_id Group id.
+	 */
+	public static function bp_group_moderation_send_held_invites( $group_id ) {
+		$drafts = groups_get_invites(
+			array(
+				'item_id'     => (int) $group_id,
+				'invite_sent' => 'draft',
+			)
+		);
+		if ( ! $drafts ) {
+			return;
+		}
+
+		$manager = new BP_Groups_Invitation_Manager();
+		foreach ( $drafts as $invite ) {
+			$manager->send_invitation_by_id( $invite->id );
+		}
+	}
+
+	/**
+	 * Hold a newly created group for approval, whatever created it.
+	 *
+	 * @param int                   $group_id The group id.
+	 * @param BP_Groups_Member|null $member   Creator membership (unused).
+	 * @param BP_Groups_Group|null  $group    The new group.
+	 */
+	public function bp_group_moderation_set_group_to_pending( $group_id, $member = null, $group = null ) {
+		$group = $group instanceof BP_Groups_Group ? $group : groups_get_group( $group_id );
 		if ( empty( $group->id ) || self::bp_group_moderation_is_pending( $group->id ) ) {
 			return;
 		}
 
 		if ( bp_group_moderation_fetch_settings( 'bp_group_moderation_auto_approve_admin' ) && user_can( $group->creator_id, 'manage_options' ) ) {
+			return;
+		}
+
+		/**
+		 * Whether a new group waits for approval. A plugin that creates groups for its own records
+		 * (a companion group per listing, say) returns false around its groups_create_group() call.
+		 *
+		 * @since 1.0.1
+		 *
+		 * @param bool            $hold  True to hold the group for approval.
+		 * @param BP_Groups_Group $group The new group.
+		 */
+		if ( ! apply_filters( 'bp_group_moderation_hold_new_group', true, $group ) ) {
 			return;
 		}
 
@@ -309,7 +379,21 @@ class BP_Group_Moderation {
 		// The save guard turns the status to hidden.
 		$group->save();
 
-		$this->bp_group_moderation_notify_admins_of_pending_group( $group );
+		// On the create screen the creator is still choosing settings; notify when they finish.
+		if ( ! bp_is_group_create() ) {
+			$this->bp_group_moderation_notify_admins_of_pending_group( $group );
+		}
+	}
+
+	/**
+	 * The creator finished the create screen: tell the admins about the pending group (once).
+	 *
+	 * @param int $group_id The group id.
+	 */
+	public function bp_group_moderation_create_screen_complete( $group_id ) {
+		if ( self::bp_group_moderation_is_pending( (int) $group_id ) ) {
+			$this->bp_group_moderation_notify_admins_of_pending_group( groups_get_group( $group_id ) );
+		}
 	}
 
 	/**

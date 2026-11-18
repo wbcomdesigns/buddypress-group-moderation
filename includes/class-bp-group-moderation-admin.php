@@ -41,7 +41,6 @@ class BP_Group_Moderation_Admin {
 	private function __construct() {
 		// Admin hooks.
 		add_action( 'bp_admin_menu', array( $this, 'bp_group_moderation_add_admin_menu' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'bp_group_moderation_admin_enqueue_scripts' ) );
 
 		// AJAX handlers.
 		add_action( 'wp_ajax_bp_group_moderation_handle_group', array( $this, 'bp_group_moderation_ajax_handle_group' ) );
@@ -57,7 +56,7 @@ class BP_Group_Moderation_Admin {
 			$menu_title .= sprintf( ' <span class="awaiting-mod count-%1$d"><span class="pending-count">%2$s</span></span>', $pending_count, number_format_i18n( $pending_count ) );
 		}
 
-		add_submenu_page(
+		$hook = add_submenu_page(
 			'bp-groups',
 			__( 'Pending Groups', 'buddypress-group-moderation' ),
 			$menu_title,
@@ -65,6 +64,11 @@ class BP_Group_Moderation_Admin {
 			'bp-pending-groups',
 			array( $this, 'bp_group_moderation_admin_page_content' )
 		);
+
+		// Opened from a notification: mark it read before the toolbar counts are drawn.
+		if ( $hook ) {
+			add_action( 'load-' . $hook, array( 'BP_Group_Moderation_Notifications', 'bp_group_moderation_mark_read_from_request' ) );
+		}
 	}
 
 	/**
@@ -72,7 +76,7 @@ class BP_Group_Moderation_Admin {
 	 *
 	 * @param string $hook The current admin page.
 	 */
-	public function bp_group_moderation_admin_enqueue_scripts( $hook ) {
+	public static function bp_group_moderation_admin_enqueue_scripts( $hook ) {
 		if ( strpos( $hook, 'bp-pending-groups' ) === false && strpos( $hook, 'bp-group-moderation' ) === false && 'toplevel_page_wbcomplugins' !== $hook ) {
 			return;
 		}
@@ -131,9 +135,12 @@ class BP_Group_Moderation_Admin {
 		// Another admin may have handled it already, or the group was deleted.
 		if ( ! BP_Group_Moderation::bp_group_moderation_is_pending( $group_id ) ) {
 			wp_send_json_success(
-				array(
-					'message' => __( 'This group was already approved or rejected.', 'buddypress-group-moderation' ),
-					'handled' => true,
+				array_merge(
+					array(
+						'message' => __( 'This group was already approved or rejected.', 'buddypress-group-moderation' ),
+						'handled' => true,
+					),
+					self::bp_group_moderation_pending_count_data()
 				)
 			);
 		}
@@ -147,10 +154,25 @@ class BP_Group_Moderation_Admin {
 		}
 
 		if ( $result ) {
-			wp_send_json_success( array( 'message' => $message ) );
+			wp_send_json_success( array_merge( array( 'message' => $message ), self::bp_group_moderation_pending_count_data() ) );
 		}
 
 		wp_send_json_error( array( 'message' => __( 'An error occurred while processing the request.', 'buddypress-group-moderation' ) ), 500 );
+	}
+
+	/**
+	 * Pending count for the AJAX response, so the screen updates its counts without a reload.
+	 *
+	 * @return array { pending: int, pendingText: string }
+	 */
+	public static function bp_group_moderation_pending_count_data() {
+		$count = count( BP_Group_Moderation::bp_group_moderation_get_pending_group_ids() );
+
+		return array(
+			'pending'     => $count,
+			/* translators: %s: number of pending groups. */
+			'pendingText' => sprintf( _n( '%s pending group', '%s pending groups', $count, 'buddypress-group-moderation' ), number_format_i18n( $count ) ),
+		);
 	}
 
 	/**
@@ -184,6 +206,32 @@ class BP_Group_Moderation_Admin {
 		if ( bp_is_active( 'notifications' ) ) {
 			bp_notifications_delete_all_notifications_by_type( $group->id, 'groups', 'new_group_pending' );
 		}
+
+		// Activity recorded while the group was hidden was hidden sitewide; a public group shows it.
+		if ( 'public' === $group->status && bp_is_active( 'activity' ) ) {
+			$activities = bp_activity_get(
+				array(
+					'filter'      => array(
+						'object'     => buddypress()->groups->id,
+						'primary_id' => $group->id,
+						'action'     => array( 'created_group', 'new_group_avatar', 'new_group_cover_photo' ),
+					),
+					'show_hidden' => true,
+					'per_page'    => 0,
+					'fields'      => 'ids',
+				)
+			);
+			foreach ( $activities['activities'] as $activity_id ) {
+				$activity = new BP_Activity_Activity( $activity_id );
+				if ( $activity->id && $activity->hide_sitewide ) {
+					$activity->hide_sitewide = 0;
+					$activity->save();
+				}
+			}
+		}
+
+		// Invitations sent while pending were held; send them now.
+		BP_Group_Moderation::bp_group_moderation_send_held_invites( $group->id );
 
 		$this->bp_group_moderation_notify_user_of_group_decision( $group, 'approved' );
 
@@ -313,12 +361,13 @@ class BP_Group_Moderation_Admin {
 	 * Render the admin page content for managing pending groups.
 	 */
 	public function bp_group_moderation_admin_page_content() {
-		// Opened from a notification: mark it read (ownership checked there). Never blocks the page.
-		BP_Group_Moderation_Notifications::bp_group_moderation_mark_read_from_request();
-
-		$per_page       = 20;
-		$paged          = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page number.
-		$pending        = $this->bp_group_moderation_get_pending_groups( $paged, $per_page );
+		$per_page = 20;
+		$paged    = isset( $_GET['paged'] ) ? max( 1, absint( $_GET['paged'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only page number.
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only list filters.
+		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
+		$order  = isset( $_GET['order'] ) && 'asc' === sanitize_key( wp_unslash( $_GET['order'] ) ) ? 'ASC' : 'DESC';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		$pending        = $this->bp_group_moderation_get_pending_groups( $paged, $per_page, $search, $order );
 		$pending_groups = $pending['groups'];
 
 		// One users query for the page instead of get_userdata() per row.
@@ -333,6 +382,21 @@ class BP_Group_Moderation_Admin {
 			<hr class="wp-header-end">
 
 			<div id="bp-group-moderation-messages" aria-live="polite"></div>
+
+			<form method="get" class="bp-group-moderation-filters" role="search">
+				<input type="hidden" name="page" value="bp-pending-groups">
+				<label class="screen-reader-text" for="bp-group-moderation-search"><?php esc_html_e( 'Search pending groups', 'buddypress-group-moderation' ); ?></label>
+				<input type="search" id="bp-group-moderation-search" name="s" value="<?php echo esc_attr( $search ); ?>" placeholder="<?php esc_attr_e( 'Group name', 'buddypress-group-moderation' ); ?>">
+				<label class="screen-reader-text" for="bp-group-moderation-order"><?php esc_html_e( 'Sort pending groups', 'buddypress-group-moderation' ); ?></label>
+				<select id="bp-group-moderation-order" name="order">
+					<option value="desc" <?php selected( $order, 'DESC' ); ?>><?php esc_html_e( 'Newest first', 'buddypress-group-moderation' ); ?></option>
+					<option value="asc" <?php selected( $order, 'ASC' ); ?>><?php esc_html_e( 'Oldest first', 'buddypress-group-moderation' ); ?></option>
+				</select>
+				<button type="submit" class="button"><?php esc_html_e( 'Filter', 'buddypress-group-moderation' ); ?></button>
+				<?php if ( '' !== $search ) : ?>
+					<a class="button-link" href="<?php echo esc_url( admin_url( 'admin.php?page=bp-pending-groups' ) ); ?>"><?php esc_html_e( 'Clear search', 'buddypress-group-moderation' ); ?></a>
+				<?php endif; ?>
+			</form>
 
 				<?php if ( ! empty( $pending_groups ) ) : ?>
 					<div class="tablenav top">
@@ -419,27 +483,31 @@ class BP_Group_Moderation_Admin {
 					</table>
 				<?php endif; ?>
 				<div class="bp-group-moderation-no-items"<?php echo empty( $pending_groups ) ? '' : ' hidden'; ?>>
-					<p><?php esc_html_e( 'No pending groups found.', 'buddypress-group-moderation' ); ?></p>
+					<p><?php '' !== $search ? esc_html_e( 'No pending groups match your search.', 'buddypress-group-moderation' ) : esc_html_e( 'No pending groups found.', 'buddypress-group-moderation' ); ?></p>
 				</div>
 		</div>
 		<?php
 	}
 
 	/**
-	 * Get one page of pending groups, newest first.
+	 * Get one page of pending groups.
 	 *
-	 * @param int $page     Page number, 1-based.
-	 * @param int $per_page Groups per page.
+	 * @param int    $page     Page number, 1-based.
+	 * @param int    $per_page Groups per page.
+	 * @param string $search   Search terms (group name and description), optional.
+	 * @param string $order    DESC (newest first) or ASC (oldest first).
 	 * @return array { groups: BP_Groups_Group[], total: int }
 	 */
-	public function bp_group_moderation_get_pending_groups( $page = 1, $per_page = 20 ) {
+	public function bp_group_moderation_get_pending_groups( $page = 1, $per_page = 20, $search = '', $order = 'DESC' ) {
 		$result = groups_get_groups(
 			array(
-				'show_hidden' => true,
-				'type'        => 'newest',
-				'per_page'    => $per_page,
-				'page'        => $page,
-				'meta_query'  => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- approval_status is the plugin's only pending flag.
+				'show_hidden'  => true,
+				'orderby'      => 'date_created',
+				'order'        => 'ASC' === $order ? 'ASC' : 'DESC',
+				'search_terms' => '' !== $search ? $search : false,
+				'per_page'     => $per_page,
+				'page'         => $page,
+				'meta_query'   => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query -- approval_status is the plugin's only pending flag.
 					array(
 						'key'   => 'approval_status',
 						'value' => 'pending',

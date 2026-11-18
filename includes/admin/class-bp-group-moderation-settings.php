@@ -56,6 +56,8 @@ class BP_Group_Moderation_Settings {
 		add_action( 'admin_menu', array( $this, 'add_menu' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'in_admin_header', array( $this, 'suppress_foreign_notices' ), 1 );
+		// Styles and script for this screen and Pending Groups; registered here so they load even with Groups off.
+		add_action( 'admin_enqueue_scripts', array( 'BP_Group_Moderation_Admin', 'bp_group_moderation_admin_enqueue_scripts' ) );
 	}
 
 	/**
@@ -156,7 +158,8 @@ class BP_Group_Moderation_Settings {
 		$bgm_active   = $this->active_tab();
 		$bgm_page_url = admin_url( 'admin.php?page=' . self::MENU_SLUG );
 		$bgm_view     = BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/views/' . $bgm_active . '.php';
-		$bgm_pending  = count( BP_Group_Moderation::bp_group_moderation_get_pending_group_ids() );
+		$bgm_ready    = bp_group_moderation_requirements_met();
+		$bgm_pending  = $bgm_ready ? count( BP_Group_Moderation::bp_group_moderation_get_pending_group_ids() ) : 0;
 
 		include BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/views/shell.php';
 	}
