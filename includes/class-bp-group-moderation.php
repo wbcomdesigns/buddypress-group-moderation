@@ -182,8 +182,6 @@ class BP_Group_Moderation {
 			wp_schedule_event( time(), 'hourly', 'bp_group_moderation_hourly_check' );
 		}
 
-		// Add hook for direct database access
-		add_action( 'bp_group_moderation_verify_status', array( $this, 'bp_group_moderation_verify_group_status' ), 10, 1 );
 	}
 
 	/**
@@ -329,21 +327,6 @@ class BP_Group_Moderation {
 				array( '%s' ),
 				array( '%d' )
 			);
-		}
-	}
-	
-	/**
-	 * Verify and fix group status if needed (run after a short delay)
-	 *
-	 * @param int $group_id The group ID.
-	 */
-	public function bp_group_moderation_verify_group_status( $group_id ) {
-		$group = groups_get_group( $group_id );
-		$approval_status = groups_get_groupmeta( $group_id, 'approval_status', true );
-		
-		if ( 'pending' === $approval_status && 'hidden' !== $group->status ) {
-			
-			$this->bp_group_moderation_force_hidden_status( $group_id );
 		}
 	}
 	

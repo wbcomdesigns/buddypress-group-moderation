@@ -355,15 +355,7 @@ class BP_Group_Moderation_Admin {
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'Pending Groups', 'buddypress-group-moderation' ); ?></h1>
 			<a href="<?php echo esc_url( admin_url( 'admin.php?page=bp-group-moderation' ) ); ?>" class="page-title-action"><?php esc_html_e( 'Settings', 'buddypress-group-moderation' ); ?></a>
 			<hr class="wp-header-end">
-		
-			<?php 
-			if ( isset( $_GET['view'] ) && 'settings' === $_GET['view'] ) :
-				$nonce = isset( $_GET['_wpnonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ) ) : '';
-				if ( ! wp_verify_nonce( $nonce, 'bp_pending_groups_settings' ) ) {
-					wp_die( esc_html__( 'Security verification failed.', 'buddypress-group-moderation' ) );
-				}
-			?>
-			<?php else : ?>
+
 				<?php if ( ! empty( $pending_groups ) ) : ?>
 					<div id="bp-group-moderation-messages"></div>
 
@@ -445,7 +437,6 @@ class BP_Group_Moderation_Admin {
 						<p><?php esc_html_e( 'No pending groups found.', 'buddypress-group-moderation' ); ?></p>
 					</div>
 				<?php endif; ?>
-			<?php endif; ?>
 		</div>
 		<?php
 	}
