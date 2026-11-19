@@ -46,7 +46,7 @@ Go to "WB Plugins → Group Moderation". The page has two tabs and a "Pending Gr
 
 ## Updates
 
-The plugin is free and needs no licence key. Updates come from the Wbcom Designs store (https://wbcomdesigns.com/) on one shared, pre-activated key built into the plugin: the `EDD_GROUP_MODERATION_FREE_LICENSE_KEY` constant in `edd-license/edd-plugin-license.php`, set at build time. `bin/build-release.sh` refuses to build a zip while it is empty. Store side, the BuddyPress Group Moderation download id must be listed in `wbcom_free_license_download_ids()` in the store's free licence passthrough, or update downloads are refused.
+The plugin is free and needs no licence key. It has no bundled update checker; new versions are published as GitHub releases.
 
 ## Usage
 

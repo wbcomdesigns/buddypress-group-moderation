@@ -6,7 +6,7 @@
 2. In WordPress, go to **Plugins > Add New > Upload Plugin**, choose the zip file and click **Install Now**.
 3. Click **Activate**. You are taken to **WB Plugins > Group Moderation**.
 
-The plugin is free. Updates come from Wbcom Designs on a built-in licence key, so there is no licence key to enter.
+The plugin is free and has no licence key. It has no bundled update checker; new versions are published as GitHub releases.
 
 ## If the Groups component is off
 

@@ -12,10 +12,6 @@
 
 Check that **Send email notifications** is on, and that your site can send email (test with an SMTP plugin). On-site notifications need the BuddyPress **Notifications** component.
 
-## A notice says the update files are missing
-
-The `edd-license` folder was removed, for example by a security scanner or a partial upload. The plugin still works, but automatic updates are off. Reinstall the plugin from wbcomdesigns.com.
-
 ## A notice says the plugin does nothing on BuddyBoss
 
 The plugin works with BuddyPress only. Deactivate it on BuddyBoss sites.

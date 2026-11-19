@@ -42,31 +42,6 @@ require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderatio
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/class-bp-group-moderation-notifications.php';
 require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/class-bp-group-moderation-settings.php';
 /**
- * Plugin updates from the Wbcom store on the built-in free licence key. A partial upload or a
- * security scanner can strip edd-license/; the plugin keeps working without automatic updates.
- */
-if ( file_exists( BP_GROUP_MODERATION_PLUGIN_DIR . 'edd-license/edd-plugin-license.php' ) ) {
-	require_once BP_GROUP_MODERATION_PLUGIN_DIR . 'edd-license/edd-plugin-license.php';
-} else {
-	add_action( 'admin_notices', 'bp_group_moderation_license_files_missing_notice' );
-}
-
-/**
- * Tell site admins that the update files are missing.
- *
- * @since 1.0.1
- */
-function bp_group_moderation_license_files_missing_notice() {
-	if ( ! current_user_can( 'update_plugins' ) ) {
-		return;
-	}
-	printf(
-		'<div class="notice notice-warning is-dismissible"><p>%s</p></div>',
-		esc_html__( 'BuddyPress Group Moderation: the update files (edd-license folder) are missing, so automatic updates are off. Please reinstall the plugin from wbcomdesigns.com.', 'buddypress-group-moderation' )
-	);
-}
-
-/**
  * Whether this site runs BuddyPress (not BuddyBoss) with the Groups component on.
  *
  * @since 1.0.1

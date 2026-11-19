@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 #
 # Local CI for buddypress-group-moderation: PHP lint, WPCS on files changed
-# against origin, the card acceptance greps, the built-in licence key check and
-# the release gate check.
+# against origin, the card acceptance greps and the release gate check.
 #
-# Usage: bash bin/local-ci.sh            (an empty licence key is a warning)
-#        BGM_RELEASE=1 bash bin/local-ci.sh (an empty licence key fails; set by bin/build-release.sh)
+# Usage: bash bin/local-ci.sh
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
@@ -25,17 +23,9 @@ else
 fi
 
 step 3 "No debug tools, silenced errors or other product names"
-! grep -rnE 'admin_test|view-debug|error_reporting|error_log\(|var_dump\(' includes edd-license uninstall.php buddypress-group-moderation.php || fail "debug code found"
+! grep -rnE 'admin_test|view-debug|error_reporting|error_log\(|var_dump\(' includes uninstall.php buddypress-group-moderation.php || fail "debug code found"
 ! grep -rniE 'member blog|wp stories' --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=bin . || fail "another product named"
 
-step 4 "Built-in free licence key"
-key="$(grep -m1 "define( 'EDD_GROUP_MODERATION_FREE_LICENSE_KEY'" edd-license/edd-plugin-license.php | sed -E "s/.*'EDD_GROUP_MODERATION_FREE_LICENSE_KEY', '([^']*)'.*/\1/")"
-if [ -z "$key" ]; then
-	msg="EDD_GROUP_MODERATION_FREE_LICENSE_KEY is empty in edd-license/edd-plugin-license.php: set it to the free blanket licence key from the EDD store, or the release gets no updates"
-	[ "${BGM_RELEASE:-0}" = "1" ] && fail "$msg"
-	echo "    WARNING: $msg"
-fi
-
-step 5 "Release gates"
+step 4 "Release gates"
 gate="$HOME/.claude/skills/wp-plugin-development/scripts/gate-check.sh"
 if [ -f "$gate" ]; then bash "$gate" .; else echo "    gate-check.sh not found: skipped"; fi

@@ -7,7 +7,7 @@
     "text_domain": "buddypress-group-moderation",
     "requires_php": "8.1",
     "scope": "single site; BuddyPress with the Groups component. Inert with an admin notice on BuddyBoss, without BuddyPress or with Groups off (bp_group_moderation_requirements_met(), checked on bp_include); never deactivates itself.",
-    "licensed": "free: EDD updater in edd-license/ (store https://wbcomdesigns.com/) on the built-in key EDD_GROUP_MODERATION_FREE_LICENSE_KEY (edd-license/edd-plugin-license.php, set at build time; bin/build-release.sh fails while empty). Registered on init so cron/WP-CLI update checks work; no key, no updater. No licence UI, no stored key or status. Store side: the download id must be in wbcom_free_license_download_ids() (store free licence passthrough)."
+    "licensed": "free: no licence key and no bundled updater; updates are GitHub releases"
   },
   "rest": {
     "namespace": null,
@@ -80,12 +80,6 @@
         "bp_group_moderation_send_emails": "bool, default true (applied by bp_group_moderation_fetch_settings via wp_parse_args, no activation write)",
         "bp_group_moderation_delete_data_on_uninstall": "bool, default false; read by uninstall.php"
       }
-    },
-    {
-      "key": "edd_sl_<md5 of slug + key + beta>",
-      "type": "array",
-      "written_by": "EDD_GROUP_MODERATION_PLUGIN_UPDATER::set_version_info_cache (3h version cache, autoload no)",
-      "note": "not removed by uninstall.php (key-derived name)"
     }
   ],
   "transients": [],
@@ -149,28 +143,16 @@
     "js": "assets/js/bp-group-moderation-admin.js (+ .min)",
     "enqueued_on": "bp-pending-groups, bp-group-moderation, toplevel_page_wbcomplugins"
   },
-  "uninstall": "uninstall.php: clears the cron event; deletes the settings option and the legacy 1.0.0 licence options and transient only when bp_group_moderation_delete_data_on_uninstall is on",
+  "uninstall": "uninstall.php: clears the cron event; deletes the settings option only when bp_group_moderation_delete_data_on_uninstall is on",
   "ci": {
     "local": "bin/local-ci.sh",
     "build": "bin/build-release.sh",
     "gates": "~/.claude/skills/wp-plugin-development/scripts/gate-check.sh",
-    "allowlists": "none",
-    "licence_key_check": "bin/local-ci.sh step 4 warns when EDD_GROUP_MODERATION_FREE_LICENSE_KEY is empty; fails under BGM_RELEASE=1, which bin/build-release.sh sets"
+    "allowlists": "none"
   },
   "generated": {
     "at": "2026-11-19",
     "from": "manual delta, 2nd team audit of branch 1.0.1"
-  },
-  "legacy_data": {
-    "options": [
-      "edd_wbcom_group_moderation_license_key",
-      "edd_wbcom_group_moderation_license_status"
-    ],
-    "transients": [
-      "edd_wbcom_group_moderation_license_key_data"
-    ],
-    "written_by": "1.0.0 only; nothing writes them now",
-    "cleaned_by": "edd_group_moderation_remove_legacy_licence_data() on admin_init while either option exists, and uninstall.php when delete-on-uninstall is on"
   },
   "legacy_cron": "bp_group_moderation_hourly_check (1.0.0): unscheduled on load when present and on deactivation; the pending state is enforced by groups_group_before_save instead",
   "hooks_consumed": [

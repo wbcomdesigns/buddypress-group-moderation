@@ -14,7 +14,7 @@ CONST="$(grep -m1 "define( 'BP_GROUP_MODERATION_VERSION'" "$SLUG.php" | sed -E "
 TAG="$(grep -m1 '^Stable tag:' readme.txt | sed -E 's/Stable tag:[[:space:]]*//')"
 [ "$HDR" = "$CONST" ] && [ "$HDR" = "$TAG" ] || fail "version mismatch: header=$HDR const=$CONST readme=$TAG"
 
-BGM_RELEASE=1 bash bin/local-ci.sh
+bash bin/local-ci.sh
 
 STAGE="dist/_stage/$SLUG"
 rm -rf dist/_stage "dist/$SLUG-$HDR.zip"

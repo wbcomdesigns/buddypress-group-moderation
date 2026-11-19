@@ -14,7 +14,7 @@ New BuddyPress groups wait for an administrator to approve them before members c
 
 Every new group is held as hidden and pending until a site administrator approves it from Groups > Pending Groups. The creator is notified on approval or rejection, and an approved group gets the visibility its creator asked for.
 
-Settings live under WB Plugins > Group Moderation, with General and Support tabs. The plugin is free: updates come from Wbcom Designs on a built-in licence key, so there is no key to enter.
+Settings live under WB Plugins > Group Moderation, with General and Support tabs. The plugin is free and has no licence key.
 
 == Changelog ==
 
@@ -25,7 +25,6 @@ Settings live under WB Plugins > Group Moderation, with General and Support tabs
 * New      - Pending Groups has a group name search and a newest or oldest first sort.
 * New      - Opt-in setting to delete the plugin settings when the plugin is deleted, off by default.
 * Improve  - Settings open on a General and Support panel with a Pending Groups shortcut and the pending count.
-* Improve  - Plugin updates arrive on a built-in free licence key, with no licence key to enter or activate.
 * Improve  - The settings screen and the Pending Groups list follow the admin colour scheme, work at phone width and in right-to-left languages.
 * Improve  - The pending notice on the group page uses the BuddyPress notice style, in light and dark mode.
 * Improve  - Manage > Settings on a pending group shows the type the creator asked for, and changing it updates the type applied on approval.
@@ -51,8 +50,7 @@ Settings live under WB Plugins > Group Moderation, with General and Support tabs
 * Dev      - New filter bp_group_moderation_hold_new_group lets a plugin skip moderation for groups it creates for its own records.
 * Dev      - The plugin header declares Requires PHP 8.1.
 * Dev      - Removed the never-fired bp_group_moderation_verify_status hook, three filters on hooks BuddyPress never fires, and a dead settings branch on the Pending Groups page.
-* Dev      - Removed the licence screen, notices and stored licence options; the key is the EDD_GROUP_MODERATION_FREE_LICENSE_KEY constant and old licence data is deleted on the next admin page load.
-* Dev      - A missing edd-license folder shows an admin notice instead of a fatal error.
+* Dev      - Removed the bundled update checker; updates come from GitHub releases.
 
 = 1.0.0 =
 

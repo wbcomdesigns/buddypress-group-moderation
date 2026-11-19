@@ -42,10 +42,6 @@ msgstr ""
 msgid "https://wbcomdesigns.com"
 msgstr ""
 
-#: buddypress-group-moderation.php:65
-msgid "BuddyPress Group Moderation: the update files (edd-license folder) are missing, so automatic updates are off. Please reinstall the plugin from wbcomdesigns.com."
-msgstr ""
-
 #: buddypress-group-moderation.php:137
 msgid "BuddyPress"
 msgstr ""
@@ -70,24 +66,6 @@ msgstr ""
 #: buddypress-group-moderation.php:157
 #, php-format
 msgid "%1$s requires the %2$s to be enabled in the BuddyPress settings."
-msgstr ""
-
-#: edd-license/edd_group_moderation_plugin_updater.php:200
-#, php-format
-msgid "There is a new version of %1$s available. %2$sView version %3$s details%4$s."
-msgstr ""
-
-#: edd-license/edd_group_moderation_plugin_updater.php:208
-#, php-format
-msgid "There is a new version of %1$s available. %2$sView version %3$s details%4$s or %5$supdate now%6$s."
-msgstr ""
-
-#: edd-license/edd_group_moderation_plugin_updater.php:400
-msgid "You do not have permission to install plugin updates"
-msgstr ""
-
-#: edd-license/edd_group_moderation_plugin_updater.php:400
-msgid "Error"
 msgstr ""
 
 #: includes/admin/class-bp-group-moderation-settings.php:72
