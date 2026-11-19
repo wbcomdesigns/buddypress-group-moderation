@@ -1,0 +1,27 @@
+# Files and directories EXCLUDED from the release zip. Anything not listed ships.
+
+# VCS
+.git
+.gitignore
+.gitattributes
+.github
+
+# Dev tooling
+.distignore
+.DS_Store
+.gate-check-allow
+.core-first-allow
+.time-standard-allow
+node_modules
+dist
+bin
+gruntfile.js
+package.json
+package-lock.json
+phpcs.xml
+
+# Docs and audit live in the repo, not the plugin zip
+audit
+docs
+*.md
+*.map

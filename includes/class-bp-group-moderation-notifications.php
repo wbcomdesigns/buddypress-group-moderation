@@ -40,10 +40,12 @@ class BP_Group_Moderation_Notifications {
 	 */
 	private function __construct() {
 
-		add_action( 'bp_init',  array( $this, 'bp_group_moderation_check_notifications_component' ) );
-		
+		add_action( 'bp_init', array( $this, 'bp_group_moderation_check_notifications_component' ) );
 	}
 
+	/**
+	 * Registers the notification formatters when the Notifications component is active.
+	 */
 	public function bp_group_moderation_check_notifications_component() {
 		if ( ! function_exists( 'bp_is_active' ) || ! bp_is_active( 'notifications' ) ) {
 			return;
@@ -53,7 +55,7 @@ class BP_Group_Moderation_Notifications {
 		add_filter( 'bp_groups_new_group_pending_notification', array( $this, 'bp_group_moderation_format_new_group_pending_notifications' ), 10, 5 );
 		add_filter( 'bp_groups_group_approved_notification', array( $this, 'bp_group_moderation_format_group_approved_notifications' ), 10, 5 );
 		add_filter( 'bp_groups_group_rejected_notification', array( $this, 'bp_group_moderation_format_group_rejected_notifications' ), 10, 5 );
-		add_action( 'template_redirect', array( $this, 'bp_group_moderation_mark_read_single_notification' ) );
+		add_action( 'template_redirect', array( __CLASS__, 'bp_group_moderation_mark_read_from_request' ) );
 	}
 
 	/**
@@ -63,70 +65,82 @@ class BP_Group_Moderation_Notifications {
 	 * @return array
 	 */
 	public function bp_group_moderation_register_notifications_component( $component_names = array() ) {
-		// Ensure $component_names is an array
+		// Ensure $component_names is an array.
 		if ( ! is_array( $component_names ) ) {
 			$component_names = array();
 		}
-		
+
 		// Add our component to the registered components.
 		// Use 'groups' component for broader compatibility.
-		if ( ! in_array( 'groups', $component_names ) ) {
+		if ( ! in_array( 'groups', $component_names, true ) ) {
 			$component_names[] = 'groups';
 		}
-		
+
 		return $component_names;
 	}
 
 		/**
-	 * Formats notifications for pending group approvals.
-	 *
-	 * This callback formats the notification text and link shown to admins when
-	 * one or more new BuddyPress groups are pending approval. The output is used 
-	 * by the 'bp_group_moderation_format_new_group_pending_notifications' filter.
-	 *
-	 * @param string $action            Default notification text.
-	 * @param int    $item_id           Group ID (primary item).
-	 * @param int    $secondary_item_id Not used in this context.
-	 * @param int    $total_items       Number of pending groups.
-	 * @param string $format            Desired format: 'string' or 'array'.
-	 *
-	 * @return string|array Modified notification content (string or array format).
-	 */
+		 * Formats notifications for pending group approvals.
+		 *
+		 * This callback formats the notification text and link shown to admins when
+		 * one or more new BuddyPress groups are pending approval. The output is used
+		 * by the 'bp_group_moderation_format_new_group_pending_notifications' filter.
+		 *
+		 * @param string $action            Default notification text.
+		 * @param int    $item_id           Group ID (primary item).
+		 * @param int    $secondary_item_id Not used in this context.
+		 * @param int    $total_items       Number of pending groups.
+		 * @param string $format            Desired format: 'string' or 'array'.
+		 *
+		 * @return string|array Modified notification content (string or array format).
+		 */
 	public function bp_group_moderation_format_new_group_pending_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
 
 		$group = groups_get_group( $item_id );
-		
+
 		if ( ! $group ) {
 			return $action;
 		}
 
-		$notification_id =  0;
+		$notification_id = 0;
 
-		if( function_exists( 'bp_is_notifications_component' ) && bp_is_notifications_component() ) { 
+		if ( function_exists( 'bp_is_notifications_component' ) && bp_is_notifications_component() ) {
 			$notification_id = function_exists( 'bp_get_the_notification_id' ) ? bp_get_the_notification_id() : 0;
 		}
 
-		if( empty( $group->name ) ) { 
-			$member_group_name = get_user_meta( $secondary_item_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
+		if ( empty( $group->name ) ) {
+			$member_group_name = get_user_meta( $secondary_item_id, 'bp_grp_moderation_rejected_group_' . $item_id, true );
 		} else {
 			$member_group_name = $group->name;
 		}
 
+		$text = ( 1 === (int) $total_items )
+			/* translators: %s: group name. */
+			? sprintf( __( 'New group "%s" is pending approval.', 'buddypress-group-moderation' ), $member_group_name )
+			/* translators: %d: number of pending groups. */
+			: sprintf( _n( '%d new group is pending approval.', '%d new groups are pending approval.', $total_items, 'buddypress-group-moderation' ), $total_items );
 
-		$text = (1 === $total_items)
-			? sprintf(__('New group "%s" is pending approval.', 'buddypress-group-moderation'), $member_group_name )
-			: sprintf(__('%d new groups are pending approval.', 'buddypress-group-moderation'), $total_items);
-		
 		$link = admin_url( 'admin.php?page=bp-pending-groups' );
-		
-		if( $notification_id ) {
-			$link = add_query_arg( array( 'id' => $notification_id, 'action' => 'new_group_pending' ,'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' )  ), $link );
+
+		if ( $notification_id ) {
+			$link = add_query_arg(
+				array(
+					'id'        => $notification_id,
+					'action'    => 'new_group_pending',
+					'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' ),
+				),
+				$link
+			);
 		} else {
-			$link = add_query_arg( array( 'action' => 'new_group_pending' ,'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' )  ), $link );
+			$link = add_query_arg(
+				array(
+					'action'    => 'new_group_pending',
+					'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' ),
+				),
+				$link
+			);
 		}
 
-		
-		
 		if ( empty( $text ) || empty( $link ) ) {
 			return $action;
 		}
@@ -134,19 +148,18 @@ class BP_Group_Moderation_Notifications {
 		if ( 'string' === $format ) {
 			return '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
 		}
-	
+
 		return array(
 			'text' => $text,
 			'link' => $link,
 		);
-
 	}
 
 	/**
 	 * Formats the BuddyPress group moderation notification for approved groups.
 	 *
 	 * This callback formats the notification text and link shown to admins when
-	 * one or more new BuddyPress groups are approved. The output is used 
+	 * one or more new BuddyPress groups are approved. The output is used
 	 * by the 'bp_groups_group_approved_notification' filter.
 	 *
 	 * @param string $action            Default notification text.
@@ -160,24 +173,38 @@ class BP_Group_Moderation_Notifications {
 	public function bp_group_moderation_format_group_approved_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
 
 		$group = groups_get_group( $item_id );
-		
+
 		if ( ! $group ) {
 			return $action;
 		}
 
-		$notification_id =  0;
+		$notification_id = 0;
 
-		if( function_exists( 'bp_is_notifications_component' ) && bp_is_notifications_component() ) { 
+		if ( function_exists( 'bp_is_notifications_component' ) && bp_is_notifications_component() ) {
 			$notification_id = function_exists( 'bp_get_the_notification_id' ) ? bp_get_the_notification_id() : 0;
 		}
 
+		/* translators: %s: group name. */
 		$text = sprintf( __( 'Your group "%s" has been approved.', 'buddypress-group-moderation' ), $group->name );
-		$link = bp_get_group_url( $group );
+		$link = BP_Group_Moderation::bp_group_moderation_get_group_url( $group );
 
-		if( $notification_id ) {
-			$link = add_query_arg( array( 'id' => $notification_id, 'action' => 'group_approved' ,'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' )  ), $link );
+		if ( $notification_id ) {
+			$link = add_query_arg(
+				array(
+					'id'        => $notification_id,
+					'action'    => 'group_approved',
+					'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' ),
+				),
+				$link
+			);
 		} else {
-			$link = add_query_arg( array( 'action' => 'group_approved' ,'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' )  ), $link );
+			$link = add_query_arg(
+				array(
+					'action'    => 'group_approved',
+					'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' ),
+				),
+				$link
+			);
 		}
 		if ( empty( $text ) || empty( $link ) ) {
 			return $action;
@@ -186,19 +213,18 @@ class BP_Group_Moderation_Notifications {
 		if ( 'string' === $format ) {
 			return '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
 		}
-	
+
 		return array(
 			'text' => $text,
 			'link' => $link,
 		);
-		
 	}
 
 	/**
 	 * Formats the BuddyPress group moderation notification for rejected groups.
 	 *
 	 * This callback formats the notification text and link shown to admins when
-	 * one or more new BuddyPress groups are not approved. The output is used 
+	 * one or more new BuddyPress groups are not approved. The output is used
 	 * by the 'bp_groups_group_rejected_notification' filter.
 	 *
 	 * @param string $action            Default notification text.
@@ -210,29 +236,43 @@ class BP_Group_Moderation_Notifications {
 	 * @return string|array Modified notification content (string or array format).
 	 */
 	public function bp_group_moderation_format_group_rejected_notifications( $action, $item_id, $secondary_item_id, $total_items, $format ) {
-		
+
 		$group = groups_get_group( $item_id );
-	
-		if ( !$group || empty( $item_id ) ) {
+
+		if ( ! $group || empty( $item_id ) ) {
 			return $action;
 		}
 
-		$user_id = bp_loggedin_user_id();
-		$group_name = get_user_meta( $user_id, 'bp_grp_moderation_rejected_group_'.$item_id, true );
-		
-		$notification_id =  0;
+		// The group is deleted on reject; its name was kept on the creator (the secondary item).
+		$group_name = get_user_meta( (int) $secondary_item_id, 'bp_grp_moderation_rejected_group_' . $item_id, true );
 
-		if( function_exists( 'bp_is_notifications_component' ) && bp_is_notifications_component() ) { 
+		$notification_id = 0;
+
+		if ( function_exists( 'bp_is_notifications_component' ) && bp_is_notifications_component() ) {
 			$notification_id = function_exists( 'bp_get_the_notification_id' ) ? bp_get_the_notification_id() : 0;
 		}
-		
-		$text = sprintf(__( 'Your group "%s" was not approved by the site administrators.', 'buddypress-group-moderation' ), $group_name);
+
+		/* translators: %s: group name. */
+		$text = sprintf( __( 'Your group "%s" was not approved by the site administrators.', 'buddypress-group-moderation' ), $group_name );
 		$link = bp_loggedin_user_domain() . 'notifications/';
 
-		if( $notification_id ) {
-			$link = add_query_arg( array( 'id' => $notification_id, 'action' => 'group_rejected' ,'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' )  ), $link );
+		if ( $notification_id ) {
+			$link = add_query_arg(
+				array(
+					'id'        => $notification_id,
+					'action'    => 'group_rejected',
+					'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' ),
+				),
+				$link
+			);
 		} else {
-			$link = add_query_arg( array( 'action' => 'group_rejected' ,'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' )  ), $link );
+			$link = add_query_arg(
+				array(
+					'action'    => 'group_rejected',
+					'_wp_nonce' => wp_create_nonce( 'bp_group_moderation_notification_nonce' ),
+				),
+				$link
+			);
 		}
 
 		if ( empty( $text ) || empty( $link ) ) {
@@ -242,48 +282,51 @@ class BP_Group_Moderation_Notifications {
 		if ( 'string' === $format ) {
 			return '<a href="' . esc_url( $link ) . '">' . esc_html( $text ) . '</a>';
 		}
-	
+
 		return array(
 			'text' => $text,
-			'link' => $link
+			'link' => $link,
 		);
-		
 	}
 
 
 	/**
-	 * Marks notifications as read.
+	 * Mark the notification a member opened as read, when the link carries this plugin's nonce.
+	 *
+	 * Runs on the front end (template_redirect) and on the Pending Groups screen. Only the
+	 * signed-in member's own notifications are touched.
+	 *
 	 * @since 1.0.0
 	 */
-	public function bp_group_moderation_mark_read_single_notification(){
-		
-		if( ( isset( $_GET[ 'action' ] ) || isset( $_GET[ 'id' ] ) )  && isset( $_GET['_wp_nonce'] ) ) {
-
-			$nonce_value     = !empty( $_GET['_wp_nonce'] ) ? sanitize_text_field( wp_unslash( $_GET['_wp_nonce'] ) ) : ''; 
-			$notification_id = !empty( $_GET['id'] ) ? sanitize_text_field( wp_unslash( $_GET['id'] ) ) : 0; 
-
-			$notification_component = !empty( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : ''; 
-
-			if(  ! wp_verify_nonce( $nonce_value, 'bp_group_moderation_notification_nonce'  ) ) { 
-				return;
-			}
-			
-			if ( class_exists('BP_Notifications_Notification') ) {
-
-				if( empty( $notification_id ) && !empty( $notification_component )) {
-							
-					bp_notifications_mark_notifications_by_type( bp_loggedin_user_id(), 'groups' , $notification_component );
-				
-				} elseif( !empty( $notification_id ) ) {
-									
-					BP_Notifications_Notification::update(
-						array( 'is_new' => 0 ),
-						array( 'id'     => $notification_id )
-					);
-				}	
-			}
+	public static function bp_group_moderation_mark_read_from_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- verified below.
+		if ( empty( $_GET['_wp_nonce'] ) || ! is_user_logged_in() || ! bp_is_active( 'notifications' ) ) {
+			return;
 		}
-			
-	}
 
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wp_nonce'] ) ), 'bp_group_moderation_notification_nonce' ) ) {
+			return;
+		}
+
+		$user_id         = bp_loggedin_user_id();
+		$notification_id = isset( $_GET['id'] ) ? absint( $_GET['id'] ) : 0;
+		$action          = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : '';
+		// phpcs:enable
+
+		if ( $notification_id ) {
+			// bp_notifications_mark_notification() checks the displayed user, who is nobody on a group
+			// page or in wp-admin; mark it for the signed-in owner directly (the where clause scopes it too).
+			if ( bp_notifications_check_notification_access( $user_id, $notification_id ) ) {
+				BP_Notifications_Notification::update(
+					array( 'is_new' => 0 ),
+					array(
+						'id'      => $notification_id,
+						'user_id' => $user_id,
+					)
+				);
+			}
+		} elseif ( in_array( $action, array( 'new_group_pending', 'group_approved', 'group_rejected' ), true ) ) {
+			bp_notifications_mark_notifications_by_type( $user_id, 'groups', $action );
+		}
+	}
 }

@@ -1,6 +1,6 @@
 {
   "name": "buddypress-group-moderation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "url": "https://github.com/wbcomdesigns/buddypress-group-moderation",
   "license": "GPL-2.0+",
   "description": "Free WordPress plugin used to introduce a moderation system for BuddyPress groups, requiring admin approval for new groups before they become active.",

@@ -80,22 +80,6 @@ module.exports = function (grunt) {
                     ext: '.min.css' // Output file extension
                 }],
             },
-            wbcom: {
-                files: [{
-                    expand: true,
-                    cwd: 'admin/wbcom/assets/css/', // Source directory for admin CSS files
-                    src: ['*.css', '!*.min.css', '!vendor/*.css'], // Minify all admin CSS files except already minified ones
-                    dest: 'admin/wbcom/assets/css/', // Destination directory for minified admin CSS
-                    ext: '.min.css', // Extension for minified files
-                },
-                {
-                    expand: true,
-                    cwd: 'admin/wbcom/assets/css-rtl/', // Source directory for RTL CSS files
-                    src: ['*.css', '!*.min.css', '!vendor/*.css'], // Minify all .css files except already minified ones
-                    dest: 'admin/wbcom/assets/css-rtl/', // Destination directory for minified CSS
-                    ext: '.min.css' // Output file extension
-                }],
-            },
         },
         // rtlcss
         rtlcss: {
@@ -120,13 +104,6 @@ module.exports = function (grunt) {
                         dest: 'assets/css-rtl', // Destination directory for public RTL CSS
                         flatten: true // Prevents creating subdirectories
                     },
-                    {
-                        expand: true,
-                        cwd: 'admin/wbcom/assets/css', // Source directory for public CSS
-                        src: ['**/*.css', '!**/*.min.css', '!vendor/**/*.css'], // Source files, excluding vendor CSS
-                        dest: 'admin/wbcom/assets/css-rtl', // Destination directory for public RTL CSS
-                        flatten: true // Prevents creating subdirectories
-                    },
                 ]
             }
         },
@@ -146,18 +123,6 @@ module.exports = function (grunt) {
                     cwd: 'assets/js/', // Source directory for admin JS files
                     src: ['*.js', '!*.min.js', '!vendor/*.js'], // Minify all admin JS files except already minified ones
                     dest: 'assets/js/', // Destination directory for minified admin JS
-                    ext: '.min.js', // Extension for minified files
-                }],
-            },
-            wbcom: {
-                options: {
-                    mangle: false, // Prevents variable name mangling
-                },
-                files: [{
-                    expand: true,
-                    cwd: 'admin/wbcom/assets/js', // Source directory for admin JS files
-                    src: ['*.js', '!*.min.js', '!vendor/*.js'], // Minify all admin JS files except already minified ones
-                    dest: 'admin/wbcom/assets/js', // Destination directory for minified admin JS
                     ext: '.min.js', // Extension for minified files
                 }],
             },

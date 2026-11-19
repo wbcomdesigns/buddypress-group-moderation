@@ -1,35 +1,34 @@
 <?php
-
-/** File containing the general function used in the entire plugin code. */
+/**
+ * General functions used across the plugin.
+ *
+ * @package BuddyPress_Group_Moderation
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * General function to retreive settings.
- * @param string $setting_key key whose value to be retrieved.
- * @return bool $bp_group_moderation_settings_value value of the setting.
- * 
- * @since 1.0.0
- * 
- */
+if ( ! function_exists( 'bp_group_moderation_fetch_settings' ) ) {
+	/**
+	 * Read one General setting. A key that was never saved reads its default.
+	 *
+	 * @since 1.0.0
+	 * @since 1.0.1 Defaults live here, so they hold however the plugin was activated.
+	 *
+	 * @param string $setting_key Setting key.
+	 * @return bool
+	 */
+	function bp_group_moderation_fetch_settings( $setting_key ) {
+		$defaults = array(
+			'bp_group_moderation_auto_approve_admin'       => true,
+			'bp_group_moderation_send_emails'              => true,
+			'bp_group_moderation_delete_data_on_uninstall' => false,
+		);
 
-if( ! function_exists( 'bp_group_moderation_fetch_settings' ) ) {
-    
-    function bp_group_moderation_fetch_settings( $setting_key ) {
+		$settings = get_option( 'bp_group_moderation_general_settings', array() );
+		$settings = wp_parse_args( is_array( $settings ) ? $settings : array(), $defaults );
 
-        if( empty( $setting_key ) ) { 
-            return false;
-        }
-
-        $bp_group_moderation_settings = !empty( get_option( 'bp_group_moderation_general_settings', true ) ) ? get_option( 'bp_group_moderation_general_settings', true ) : array();
-
-        $bp_group_moderation_settings_value = !empty( $bp_group_moderation_settings ) ?  $bp_group_moderation_settings[ $setting_key ] : false;
-
-        return $bp_group_moderation_settings_value;
-
-    }
+		return ! empty( $settings[ $setting_key ] );
+	}
 }
-
-?>
