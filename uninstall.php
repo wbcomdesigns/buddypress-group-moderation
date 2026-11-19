@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall: delete the plugin's settings only when the site owner opted in
+ * Uninstall: delete the licence data 1.0.0 stored, and the plugin's settings only when the site owner opted in
  * (General > Data > Delete settings on uninstall, off by default).
  *
  * @package BuddyPress_Group_Moderation
@@ -9,6 +9,11 @@
 defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
 
 wp_clear_scheduled_hook( 'bp_group_moderation_hourly_check' );
+
+// Licence data stored by 1.0.0, left behind by the removed update checker.
+delete_option( 'edd_wbcom_group_moderation_license_key' );
+delete_option( 'edd_wbcom_group_moderation_license_status' );
+delete_transient( 'edd_wbcom_group_moderation_license_key_data' );
 
 $bgm_settings = get_option( 'bp_group_moderation_general_settings', array() );
 
