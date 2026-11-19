@@ -18,7 +18,7 @@ msgstr ""
 #: buddypress-group-moderation.php
 #: buddypress-group-moderation.php:136
 #: includes/admin/class-bp-group-moderation-settings.php:86
-#: includes/admin/views/shell.php:30
+#: includes/admin/views/page-layout.php:30
 msgid "BuddyPress Group Moderation"
 msgstr ""
 
@@ -129,11 +129,11 @@ msgstr ""
 msgid "Open settings"
 msgstr ""
 
-#: includes/admin/views/shell.php:31
+#: includes/admin/views/page-layout.php:31
 msgid "New groups wait for an administrator to approve them before members can see them."
 msgstr ""
 
-#: includes/admin/views/shell.php:37
+#: includes/admin/views/page-layout.php:37
 #: includes/class-bp-group-moderation-admin.php:54
 #: includes/class-bp-group-moderation-admin.php:61
 #: includes/class-bp-group-moderation-admin.php:380
@@ -141,12 +141,12 @@ msgid "Pending Groups"
 msgstr ""
 
 #. translators: %s: plugin version.
-#: includes/admin/views/shell.php:44
+#: includes/admin/views/page-layout.php:44
 #, php-format
 msgid "Version %s"
 msgstr ""
 
-#: includes/admin/views/shell.php:53
+#: includes/admin/views/page-layout.php:53
 msgid "Group Moderation settings"
 msgstr ""
 

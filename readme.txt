@@ -42,6 +42,7 @@ Settings live under WB Plugins > Group Moderation, with General and Support tabs
 * Fix      - The Pending Groups page was blank when opened from an expired notification link.
 * Fix      - Notifications about a deleted group are removed with the group, and approval removes the pending notifications of every administrator.
 * Fix      - Removed the hourly pending-groups check; a pending group now stays hidden on every save, and old schedules are cleared.
+* Fix      - Zip installs on hosts that block files named shell.php.
 * Fix      - The Welcome and Themes & Extension tabs and the extra WB Plugins pages are gone.
 * Fix      - Saving General settings keeps any other values stored in the same option.
 * Security - A member could mark another member's notifications as read by changing the id in the link.
@@ -50,7 +51,7 @@ Settings live under WB Plugins > Group Moderation, with General and Support tabs
 * Dev      - New filter bp_group_moderation_hold_new_group lets a plugin skip moderation for groups it creates for its own records.
 * Dev      - The plugin header declares Requires PHP 8.1.
 * Dev      - Removed the never-fired bp_group_moderation_verify_status hook, three filters on hooks BuddyPress never fires, and a dead settings branch on the Pending Groups page.
-* Dev      - Removed the bundled update checker; updates come from GitHub releases.
+* Dev      - Removed the bundled update checker; updates come from GitHub releases, and uninstall removes the old licence settings.
 
 = 1.0.0 =
 

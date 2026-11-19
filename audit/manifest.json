@@ -112,7 +112,7 @@
     {
       "name": "bp_group_moderation_tab_contents",
       "type": "action",
-      "where": "includes/admin/views/shell.php after the tab body"
+      "where": "includes/admin/views/page-layout.php after the tab body"
     },
     {
       "name": "bp_group_moderation_group_pending_mail_subject",
@@ -143,7 +143,7 @@
     "js": "assets/js/bp-group-moderation-admin.js (+ .min)",
     "enqueued_on": "bp-pending-groups, bp-group-moderation, toplevel_page_wbcomplugins"
   },
-  "uninstall": "uninstall.php: clears the cron event; deletes the settings option only when bp_group_moderation_delete_data_on_uninstall is on",
+  "uninstall": "uninstall.php: clears the cron event; always deletes the legacy 1.0.0 licence options and transient (edd_wbcom_group_moderation_license_key, _license_status, _license_key_data); deletes the settings option only when bp_group_moderation_delete_data_on_uninstall is on",
   "ci": {
     "local": "bin/local-ci.sh",
     "build": "bin/build-release.sh",

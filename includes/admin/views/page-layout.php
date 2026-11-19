@@ -1,6 +1,6 @@
 <?php
 /**
- * Settings page shell: header, sidebar navigation, active tab body.
+ * Settings page layout: header, sidebar navigation, active tab body.
  *
  * Set by BP_Group_Moderation_Settings::render_page():
  *

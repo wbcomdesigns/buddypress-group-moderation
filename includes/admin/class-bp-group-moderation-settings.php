@@ -1,6 +1,6 @@
 <?php
 /**
- * Settings screen: WB Plugins > Group Moderation, on the suite card-panel shell.
+ * Settings screen: WB Plugins > Group Moderation, on the suite card-panel layout.
  *
  * Replaces the legacy Wbcom wrapper (admin/wbcom/, admin/templates/). Tabs are
  * General and Support; the page opens on General. General saves through
@@ -151,7 +151,7 @@ class BP_Group_Moderation_Settings {
 	}
 
 	/**
-	 * Render the settings page: shell plus the active tab view.
+	 * Render the settings page: layout plus the active tab view.
 	 */
 	public function render_page() {
 		$bgm_tabs     = self::get_tabs();
@@ -161,6 +161,6 @@ class BP_Group_Moderation_Settings {
 		$bgm_ready    = bp_group_moderation_requirements_met();
 		$bgm_pending  = $bgm_ready ? count( BP_Group_Moderation::bp_group_moderation_get_pending_group_ids() ) : 0;
 
-		include BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/views/shell.php';
+		include BP_GROUP_MODERATION_PLUGIN_DIR . 'includes/admin/views/page-layout.php';
 	}
 }
